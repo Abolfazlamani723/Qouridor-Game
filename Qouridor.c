@@ -31,3 +31,20 @@ typedef struct {
     struct Coordinate coord;
     int direction;  // 0: up, 1: down, 2: left, 3: right
 } StackItem;
+void movePiecePossiblities(struct BOARD* data, struct PLAYER* player) {
+    int i = player->pieceCoordinate[2 * (player->term - 1)];
+    int j = player->pieceCoordinate[2 * (player->term - 1) + 1];
+    if (data->board[i - 1][j] != 7 && data->board[i - 2][j] == 5) {//move up
+        data->board[i - 2][j] = 6;
+    }
+    if (data->board[i + 1][j] != 7 && data->board[i + 2][j] == 5) {//move down
+        data->board[i + 2][j] = 6;
+    }
+    if (data->board[i][j - 1] != 7 && data->board[i][j - 2] == 5) {//move left
+        data->board[i][j - 2] = 6;
+    }
+    if (data->board[i][j + 1] != 7 && data->board[i][j + 2] == 5) {//move right
+        data->board[i][j + 2] = 6;
+    }
+
+}

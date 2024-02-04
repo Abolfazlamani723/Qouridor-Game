@@ -6,7 +6,8 @@
 #include <allegro5/allegro_native_dialog.h>
 #include <allegro5/allegro_image.h>
 #include <stdlib.h>
-#include <stdbool.h>a
+#include <stdbool.h>
+#include <string.h>
 #include <time.h>
 
 ALLEGRO_EVENT_QUEUE* event_queue = NULL;
@@ -14,7 +15,7 @@ ALLEGRO_EVENT ev;
 #define CELLSIZE 10
 #define max_len 29
 int mouseButton;
-
+ALLEGRO_BITMAP* player1;
 struct BOARD {
     int board[max_len][max_len];
     int length;
@@ -40,7 +41,14 @@ struct PRESENT {
     int gain_wall_from_opponent_1;
     int gain_wall_from_opponent_2;
 };
-
+struct Button {
+    int posX;
+    int posY;
+    int width;
+    int height;
+    char name[max_len];
+};
+typedef struct Button Button;
 void initializeCharm(struct CHARM* charm) {
     charm->delet_all_wall = 2;
     charm->reduce_wall_2 = 10;
@@ -196,6 +204,7 @@ void makePrimaryBoard(struct BOARD* data) {
 }
 
 void movePiecePossiblities(struct BOARD* data, struct PLAYER* player) {
+
     int i = player->pieceCoordinate[2 * (player->term - 1)];
     int j = player->pieceCoordinate[2 * (player->term - 1) + 1];
     if (data->board[i - 1][j] != 7 && data->board[i - 2][j] == 5) {//move up
@@ -262,7 +271,8 @@ void movePiecePossiblitiesParties(struct BOARD* data, struct PLAYER* player) {
     }
 }
 void showBoard(struct BOARD data) {
-
+    al_clear_to_color(al_map_rgb(144, 202, 249));
+    al_draw_filled_rectangle((5 * data.length + 1) * CELLSIZE, 0, (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE, (5 * data.length + 1) * CELLSIZE, al_map_rgb(38, 50, 56));
     for (int i = 0; i < data.length * 2; i++) {
         for (int j = 0; j < data.length * 2; j++) {
             if (data.board[i][j] == 5 && i % 2 == 0 && j % 2 == 0) {
@@ -306,8 +316,8 @@ void showBoard(struct BOARD data) {
                 float centerX = ((j / 2) * 5 + 3) * CELLSIZE;
                 float centerY = ((i / 2) * 5 + 3) * CELLSIZE;
                 float redius = (3 * CELLSIZE) / 2;
-                al_draw_filled_circle(centerX, centerY, redius, al_map_rgb(255, 0, 0));
-
+                //al_draw_filled_circle(centerX, centerY, redius, al_map_rgb(255, 0, 0));
+                al_draw_scaled_bitmap(player1, 0, 0, al_get_bitmap_width(player1), al_get_bitmap_height(player1), Xpiece, Ypiece, widthPiece, heightPiece, 0);
             }
             else if (data.board[i][j] == 2) {
                 int Xpiece = ((j / 2) * 5 + 1) * CELLSIZE;
@@ -346,6 +356,12 @@ void showBoard(struct BOARD data) {
                 al_draw_filled_circle(centerX, centerY, redius, al_map_rgb(023, 45, 123));
             }
             else if (data.board[i][j] == 6 && i % 2 == 0 && j % 2 == 0) {
+                int Xpiece = ((j / 2) * 5 + 1) * CELLSIZE;
+                int Ypiece = ((i / 2) * 5 + 1) * CELLSIZE;
+                int widthPiece = 4 * CELLSIZE;
+                int heightPiece = 4 * CELLSIZE;
+
+                al_draw_filled_rectangle(Xpiece, Ypiece, Xpiece + widthPiece, Ypiece + heightPiece, al_map_rgb(0, 150, 136));
                 int centerX = ((j / 2) * 5 + 3) * CELLSIZE;
                 int centerY = ((i / 2) * 5 + 3) * CELLSIZE;
                 float redius = (3 * CELLSIZE) / 2;
@@ -434,54 +450,36 @@ int calculateWallCoordinate(float number, int length, int HoV, char XoY) {
         }
     }
 }
-void movePiece(struct BOARD* data, struct PLAYER* player, ALLEGRO_EVENT_QUEUE* event_queue, ALLEGRO_EVENT ev) {
-    int select = 0;
-    float pos_X = -1, pos_Y = -1;
-    do {
-        select = 0;
-        ALLEGRO_EVENT ev;
-        al_wait_for_event(event_queue, &ev);
-        if (ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
-        {
+void movePiece(struct BOARD* data, struct PLAYER* player, ALLEGRO_EVENT_QUEUE* event_queue, ALLEGRO_EVENT ev, int x_coordinate, int y_coordinate, bool *checkingPut) {
+    
+    float pos_X = x_coordinate, pos_Y = y_coordinate;
+    
+        
+    
+        
+    if (data->board[calculatePieceCoordinate(pos_Y, data->length)][calculatePieceCoordinate(pos_X, data->length)] == 6 && calculatePieceCoordinate(pos_Y, data->length) != -1 && calculatePieceCoordinate(pos_X, data->length) != -1) {
+        
+        int coordinate_i = player->pieceCoordinate[(player->term - 1) * 2], coordinate_j = player->pieceCoordinate[(player->term - 1) * 2 + 1];
+        data->board[coordinate_i][coordinate_j] = 5;
+        data->board[calculatePieceCoordinate(pos_Y, data->length)][calculatePieceCoordinate(pos_X, data->length)] = player->term;
+        player->pieceCoordinate[(player->term - 1) * 2] = calculatePieceCoordinate(pos_Y, data->length);
 
-            break;
-        }
-        else if (ev.type == ALLEGRO_EVENT_MOUSE_AXES)
-        {
-            pos_X = ev.mouse.x;
-            pos_Y = ev.mouse.y;
-        }
-        else if (ev.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
-            //if (ev.mouse.button & 2) { // Whit this work when press the right button ,the page clese.
-                //continue;
-              //  break;
-                //printf("Abolfazl");
+        player->pieceCoordinate[(player->term - 1) * 2 + 1] = calculatePieceCoordinate(pos_X, data->length);
+        *checkingPut = 1;
+    }
+    
+    
 
-            //}
-            if (ev.mouse.button & 1) {
-                if (data->board[calculatePieceCoordinate(pos_Y, data->length)][calculatePieceCoordinate(pos_X, data->length)] == 6 && calculatePieceCoordinate(pos_Y, data->length) != -1 && calculatePieceCoordinate(pos_X, data->length) != -1) {
-                    int coordinate_i = player->pieceCoordinate[(player->term - 1) * 2], coordinate_j = player->pieceCoordinate[(player->term - 1) * 2 + 1];
-                    data->board[coordinate_i][coordinate_j] = 5;
-                    data->board[calculatePieceCoordinate(pos_Y, data->length)][calculatePieceCoordinate(pos_X, data->length)] = player->term;
-                    player->pieceCoordinate[(player->term - 1) * 2] = calculatePieceCoordinate(pos_Y, data->length);
-
-                    player->pieceCoordinate[(player->term - 1) * 2 + 1] = calculatePieceCoordinate(pos_X, data->length);
-                    break;
-                }
-            }
-
-        }
-        al_flip_display();
-
-    } while (1 == 1);
     for (register int i = 0; i < 2 * data->length; i++) {
         for (register int j = 0; j < 2 * data->length; j++) {
             if (data->board[i][j] == 6 && i % 2 == 0 && j % 2 == 0) data->board[i][j] = 5;
         }
         //printf("\n");
     }
+    
 
 }
+
 struct Coordinate {
     int row;
     int col;
@@ -633,320 +631,286 @@ void delete_wall(struct BOARD* data) {
     for (register int i = 0; i < 2 * data->length; i++) {
         for (int j = 0; j < 2 * data->length; j++) {
             if (data->board[i][j] == 8) data->board[i][j] = 0;
+            if (data->board[i][j] == 10) data->board[i][j] = 9;
         }
     }
 }
-void putWalls(struct BOARD* data, struct PLAYER* player, ALLEGRO_EVENT_QUEUE* event_queue, ALLEGRO_EVENT ev, int* go, int Multiplayer) {
-    *go = 0;
-    int stop = 0;
-    int select = 0, HoV;
+void putWalls(struct BOARD* data, struct PLAYER* player, ALLEGRO_EVENT_QUEUE* event_queue, ALLEGRO_EVENT ev, int* go, int Multiplayer, int x_coodinate, int y_coordinate, bool submit, bool *checkingPut) {
+    
+    int HoV;
     float pos_X = -1, pos_Y = -1;
     int i = 0;
-    do {
-        select = 0;
-        ALLEGRO_EVENT ev;
-        al_wait_for_event(event_queue, &ev);
-        if (ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
-        {
-
-            break;
-        }
-        else if (ev.type == ALLEGRO_EVENT_MOUSE_AXES)
-        {
-            pos_X = ev.mouse.x;
-            pos_Y = ev.mouse.y;
+    
+        
+        
+    if (!submit){
+        delete_wall(data);
+        pos_X = x_coodinate;
+        pos_Y = y_coordinate;
+        HoV = find_HoV(pos_X, pos_Y, data->length);
+        if (pos_X > 10 && pos_Y > 10 && pos_X <= 50 * data->length - 10 && pos_Y <= 50 * data->length - 10 && (HoV == 2 || HoV == 3)) {
             HoV = find_HoV(pos_X, pos_Y, data->length);
-            if (pos_X > 10 && pos_Y > 10 && pos_X <= 50 * data->length - 10 && pos_Y <= 50 * data->length - 10 && (HoV == 2 || HoV == 3)) {
-                HoV = find_HoV(pos_X, pos_Y, data->length);
-                int index_i = calculateWallCoordinate(pos_Y, data->length, HoV, 'y'), index_j = calculateWallCoordinate(pos_X, data->length, HoV, 'x');
-                if (HoV == 2) {//vertical wall
-                    if (index_i == 0 && data->board[index_i][index_j] != 7 && data->board[index_i - 1][index_j] != 7 && data->board[index_i - 2][index_j] != 7 && index_i + 1 < 2 * data->length) {
+            int index_i = calculateWallCoordinate(pos_Y, data->length, HoV, 'y'), index_j = calculateWallCoordinate(pos_X, data->length, HoV, 'x');
+            if (HoV == 2) {//vertical wall
+                if (index_i == 0 && data->board[index_i][index_j] != 7 && data->board[index_i - 1][index_j] != 7 && data->board[index_i - 2][index_j] != 7 && index_i + 1 < 2 * data->length) {
 
-                        if (data->board[index_i][index_j] != 7) {
-                            data->board[index_i][index_j] = 8;
-                        }
-
-                        if (data->board[index_i + 1][index_j] != 7) {
-                            data->board[index_i + 1][index_j] = 8;
-                        }
-
-                        if (data->board[index_i + 2][index_j] != 7) {
-                            data->board[index_i + 2][index_j] = 8;
-                        }
-
+                    if (data->board[index_i][index_j] != 7) {
+                        data->board[index_i][index_j] = 8;
                     }
-                    else if (index_i > 0 && data->board[index_i][index_j] != 7  /* && data->board[index_i - 1][index_j] != 7 */ && data->board[index_i - 2][index_j] != 7 && index_i + 1 < 2 * data->length && (data->board[index_i - 1][index_j] != 7 || data->board[index_i - 1][index_j + 1] == 7)) {
-                        if (data->board[index_i][index_j] != 7) {
+
+                    if (data->board[index_i + 1][index_j] != 7) {
+                        data->board[index_i + 1][index_j] = 10;
+                    }
+
+                    if (data->board[index_i + 2][index_j] != 7) {
+                        data->board[index_i + 2][index_j] = 8;
+                    }
+
+                }
+                else if (index_i > 0 && data->board[index_i][index_j] != 7  /* && data->board[index_i - 1][index_j] != 7 */ && data->board[index_i - 2][index_j] != 7 && index_i + 1 < 2 * data->length && (data->board[index_i - 1][index_j] != 7 || data->board[index_i - 1][index_j + 1] == 7)) {
+                    if (data->board[index_i][index_j] != 7) {
+                        data->board[index_i][index_j] = 8;
+                    }
+
+                    if (data->board[index_i - 1][index_j] != 7) {
+                        data->board[index_i - 1][index_j] = 10;
+                    }
+
+                    if (data->board[index_i - 2][index_j] != 7) {
+                        data->board[index_i - 2][index_j] = 8;
+                    }
+
+                }
+            }
+            else if (HoV == 3) {//horizontal wall
+                if (index_j == 0 && data->board[index_i][index_j] != 7 && data->board[index_i][index_j + 1] != 7 && data->board[index_i][index_j + 2] != 7 && index_j + 1 < 2 * data->length) {
+                    if (data->board[index_i][index_j] != 7) {
+                        data->board[index_i][index_j] = 8;
+                    }
+
+                    if (data->board[index_i][index_j + 1] != 7) {
+                        data->board[index_i][index_j + 1] = 10;
+                    }
+
+                    if (data->board[index_i][index_j + 2] != 7) {
+                        data->board[index_i][index_j + 2] = 8;
+                    }
+
+                }
+                else if (index_j > 0 && data->board[index_i][index_j] != 7 && /*data->board[index_i][index_j - 1] != 7 &&*/ data->board[index_i][index_j - 2] != 7 && index_j + 1 < 2 * data->length && (data->board[index_i][index_j - 1] != 7 || data->board[index_i - 1][index_j - 1] == 7)) {
+                    if (data->board[index_i][index_j] != 7) {
+                        data->board[index_i][index_j] = 8;
+                    }
+
+                    if (data->board[index_i][index_j - 1] != 7) {
+                        data->board[index_i][index_j - 1] = 10;
+                    }
+
+                    if (data->board[index_i][index_j - 2] != 7) {
+                        data->board[index_i][index_j - 2] = 8;
+                    }
+
+                }
+            }
+            int validPlacementPiece1 = 0, validPlacementPiece2 = 0, validPlacementPiece3 = 0, validPlacementPiece4 = 0;
+            int help[max_len][max_len];
+            if (Multiplayer == 4) {
+                validPlacementPiece1 = validPlacementPiece2 = validPlacementPiece3 = validPlacementPiece4 = 0;
+
+                memset(help, 0, sizeof(help));
+                dfs_vertical(*data, 1, player->pieceCoordinate[0], player->pieceCoordinate[1], help, &validPlacementPiece1);
+                memset(help, 0, sizeof(help));
+                dfs_vertical(*data, 2, player->pieceCoordinate[2], player->pieceCoordinate[3], help, &validPlacementPiece2);
+                memset(help, 0, sizeof(help));
+                dfs_vertical(*data, 3, player->pieceCoordinate[4], player->pieceCoordinate[5], help, &validPlacementPiece3);
+                memset(help, 0, sizeof(help));
+                dfs_vertical(*data, 4, player->pieceCoordinate[6], player->pieceCoordinate[7], help, &validPlacementPiece4);
+            }
+            else if (Multiplayer == 2) {
+                validPlacementPiece1 = validPlacementPiece2 = 0;
+                validPlacementPiece3 = validPlacementPiece4 = 1;
+
+                memset(help, 0, sizeof(help));
+                dfs_vertical(*data, 1, player->pieceCoordinate[0], player->pieceCoordinate[1], help, &validPlacementPiece1);
+                memset(help, 0, sizeof(help));
+                dfs_vertical(*data, 2, player->pieceCoordinate[2], player->pieceCoordinate[3], help, &validPlacementPiece2);
+            }
+            if (validPlacementPiece1 == 1 && validPlacementPiece2 == 1 && validPlacementPiece3 == 1 && validPlacementPiece4 == 1) {
+                //printf("*******\n");
+
+                if (HoV == 2) {//vertical wall
+                    if (index_i == 0 && data->board[index_i][index_j] != 7 && data->board[index_i + 1][index_j] != 7 && data->board[index_i + 2][index_j] != 7 && index_i + 1 < 2 * data->length) {
+                        /*if (data->board[index_i][index_j] != 7) {
                             data->board[index_i][index_j] = 8;
-                        }
+                        }*/
 
-                        if (data->board[index_i - 1][index_j] != 7) {
+                        int Xwall = (index_j / 2 + 1) * 5 * CELLSIZE;
+                        int Ywall = ((index_i / 2) * 5 + 1) * CELLSIZE;
+                        int widthWall = CELLSIZE;
+                        int heightWall = (4 * CELLSIZE);
+                        al_draw_filled_rectangle(Xwall, Ywall, Xwall + widthWall, Ywall + heightWall, al_map_rgb(38, 50, 56));
+                        /*if (data->board[index_i + 1][index_j] != 7) {
+                            data->board[index_i + 1][index_j] = 8;
+                        }*/
+                        index_i++;
+                        Xwall = ((index_j + 1) / 2) * 5 * CELLSIZE;
+                        Ywall = ((index_i + 1) / 2) * 5 * CELLSIZE;
+                        widthWall = CELLSIZE;
+                        heightWall = CELLSIZE;
+
+                        al_draw_filled_rectangle(Xwall, Ywall, Xwall + widthWall, Ywall + heightWall, al_map_rgb(38, 50, 56));
+                        index_i--;
+                        /*if (data->board[index_i + 2][index_j] != 7) {
+                            data->board[index_i + 2][index_j] = 8;
+                        }*/
+                        index_i += 2;
+                        Xwall = (index_j / 2 + 1) * 5 * CELLSIZE;
+                        Ywall = ((index_i / 2) * 5 + 1) * CELLSIZE;
+                        widthWall = CELLSIZE;
+                        heightWall = (4 * CELLSIZE);
+                        al_draw_filled_rectangle(Xwall, Ywall, Xwall + widthWall, Ywall + heightWall, al_map_rgb(38, 50, 56));
+                        index_i -= 2;
+                    }
+                    else if (index_i > 0 && data->board[index_i][index_j] != 7  /* && data->board[index_i - 1][index_j] != 7 */ && data->board[index_i - 2][index_j] != 7 && index_i + 1 < 2 * data->length && (data->board[index_i - 1][index_j] != 7 || data->board[index_i - 1][index_j - 1] == 7)) {
+                        /*if (data->board[index_i][index_j] != 7) {
+                            data->board[index_i][index_j] = 8;
+                        }*/
+                        int Xwall = (index_j / 2 + 1) * 5 * CELLSIZE;
+                        int Ywall = ((index_i / 2) * 5 + 1) * CELLSIZE;
+                        int widthWall = CELLSIZE;
+                        int heightWall = (4 * CELLSIZE);
+                        al_draw_filled_rectangle(Xwall, Ywall, Xwall + widthWall, Ywall + heightWall, al_map_rgb(38, 50, 56));
+                        /*if (data->board[index_i - 1][index_j] != 7) {
                             data->board[index_i - 1][index_j] = 8;
-                        }
+                        }*/
+                        index_i--;
+                        Xwall = ((index_j + 1) / 2) * 5 * CELLSIZE;
+                        Ywall = ((index_i + 1) / 2) * 5 * CELLSIZE;
+                        widthWall = CELLSIZE;
+                        heightWall = CELLSIZE;
 
-                        if (data->board[index_i - 2][index_j] != 7) {
+                        al_draw_filled_rectangle(Xwall, Ywall, Xwall + widthWall, Ywall + heightWall, al_map_rgb(38, 50, 56));
+                        index_i++;
+                        /*if (data->board[index_i - 2][index_j] != 7) {
                             data->board[index_i - 2][index_j] = 8;
-                        }
-
+                        }*/
+                        index_i -= 2;
+                        Xwall = (index_j / 2 + 1) * 5 * CELLSIZE;
+                        Ywall = ((index_i / 2) * 5 + 1) * CELLSIZE;
+                        widthWall = CELLSIZE;
+                        heightWall = (4 * CELLSIZE);
+                        al_draw_filled_rectangle(Xwall, Ywall, Xwall + widthWall, Ywall + heightWall, al_map_rgb(38, 50, 56));
+                        index_i += 2;
                     }
                 }
                 else if (HoV == 3) {//horizontal wall
-                    if (index_j == 0 && data->board[index_i][index_j] != 7 && data->board[index_i][index_j + 1] != 7 && data->board[index_i][index_j + 2] != 7 && index_j + 1 < 2 * data->length) {
-                        if (data->board[index_i][index_j] != 7) {
+                    if (index_j == 0 && data->board[index_i][index_j] != 7  /* && data->board[index_i][index_j + 1] != 7 */ && data->board[index_i][index_j + 2] != 7 && index_j + 1 < 2 * data->length && (data->board[index_i][index_j + 1] != 7)) {
+                        /*if (data->board[index_i][index_j] != 7) {
                             data->board[index_i][index_j] = 8;
-                        }
-
-                        if (data->board[index_i][index_j + 1] != 7) {
+                        }*/
+                        int wallX = ((index_j / 2) * 5 + 1) * CELLSIZE;
+                        int wallY = (index_i / 2 + 1) * 5 * CELLSIZE;
+                        int widthWall = (4 * CELLSIZE);
+                        int heightWall = CELLSIZE;
+                        al_draw_filled_rectangle(wallX, wallY, wallX + widthWall, wallY + heightWall, al_map_rgb(38, 50, 56));
+                        /*if (data->board[index_i][index_j + 1] != 7) {
                             data->board[index_i][index_j + 1] = 8;
-                        }
+                        }*/
+                        index_j++;
+                        wallX = ((index_j + 1) / 2) * 5 * CELLSIZE;
+                        wallY = ((index_i + 1) / 2) * 5 * CELLSIZE;
+                        widthWall = CELLSIZE;
+                        heightWall = CELLSIZE;
 
-                        if (data->board[index_i][index_j + 2] != 7) {
+                        al_draw_filled_rectangle(wallX, wallY, wallX + widthWall, wallY + heightWall, al_map_rgb(38, 50, 56));
+                        index_j--;
+                        /*if (data->board[index_i][index_j + 2] != 7) {
                             data->board[index_i][index_j + 2] = 8;
-                        }
-
+                        }*/
+                        index_j += 2;
+                        wallX = ((index_j / 2) * 5 + 1) * CELLSIZE;
+                        wallY = (index_i / 2 + 1) * 5 * CELLSIZE;
+                        widthWall = (4 * CELLSIZE);
+                        heightWall = CELLSIZE;
+                        al_draw_filled_rectangle(wallX, wallY, wallX + widthWall, wallY + heightWall, al_map_rgb(38, 50, 56));
+                        index_j -= 2;
                     }
                     else if (index_j > 0 && data->board[index_i][index_j] != 7 && /*data->board[index_i][index_j - 1] != 7 &&*/ data->board[index_i][index_j - 2] != 7 && index_j + 1 < 2 * data->length && (data->board[index_i][index_j - 1] != 7 || data->board[index_i - 1][index_j - 1] == 7)) {
-                        if (data->board[index_i][index_j] != 7) {
+                        /*if (data->board[index_i][index_j] != 7) {
                             data->board[index_i][index_j] = 8;
-                        }
-
-                        if (data->board[index_i][index_j - 1] != 7) {
+                        }*/
+                        int wallX = ((index_j / 2) * 5 + 1) * CELLSIZE;
+                        int wallY = (index_i / 2 + 1) * 5 * CELLSIZE;
+                        int widthWall = (4 * CELLSIZE);
+                        int heightWall = CELLSIZE;
+                        al_draw_filled_rectangle(wallX, wallY, wallX + widthWall, wallY + heightWall, al_map_rgb(38, 50, 56));
+                        /*if (data->board[index_i][index_j - 1] != 7) {
                             data->board[index_i][index_j - 1] = 8;
-                        }
+                        }*/
+                        index_j--;
+                        wallX = ((index_j + 1) / 2) * 5 * CELLSIZE;
+                        wallY = ((index_i + 1) / 2) * 5 * CELLSIZE;
+                        widthWall = CELLSIZE;
+                        heightWall = CELLSIZE;
 
-                        if (data->board[index_i][index_j - 2] != 7) {
+                        al_draw_filled_rectangle(wallX, wallY, wallX + widthWall, wallY + heightWall, al_map_rgb(38, 50, 56));
+                        index_j++;
+                        /*if (data->board[index_i][index_j - 2] != 7) {
                             data->board[index_i][index_j - 2] = 8;
-                        }
-
+                        }*/
+                        index_j -= 2;
+                        wallX = ((index_j / 2) * 5 + 1) * CELLSIZE;
+                        wallY = (index_i / 2 + 1) * 5 * CELLSIZE;
+                        widthWall = (4 * CELLSIZE);
+                        heightWall = CELLSIZE;
+                        al_draw_filled_rectangle(wallX, wallY, wallX + widthWall, wallY + heightWall, al_map_rgb(38, 50, 56));
+                        index_j += 2;
                     }
                 }
-                int validPlacementPiece1 = 0, validPlacementPiece2 = 0, validPlacementPiece3 = 0, validPlacementPiece4 = 0;
-                int help[max_len][max_len];
-                if (Multiplayer == 4) {
-                    validPlacementPiece1 = validPlacementPiece2 = validPlacementPiece3 = validPlacementPiece4 = 0;
-
-                    memset(help, 0, sizeof(help));
-                    dfs_vertical(*data, 1, player->pieceCoordinate[0], player->pieceCoordinate[1], help, &validPlacementPiece1);
-                    memset(help, 0, sizeof(help));
-                    dfs_vertical(*data, 2, player->pieceCoordinate[2], player->pieceCoordinate[3], help, &validPlacementPiece2);
-                    memset(help, 0, sizeof(help));
-                    dfs_vertical(*data, 3, player->pieceCoordinate[4], player->pieceCoordinate[5], help, &validPlacementPiece3);
-                    memset(help, 0, sizeof(help));
-                    dfs_vertical(*data, 4, player->pieceCoordinate[6], player->pieceCoordinate[7], help, &validPlacementPiece4);
-                }
-                else if (Multiplayer == 2) {
-                    validPlacementPiece1 = validPlacementPiece2 = 0;
-                    validPlacementPiece3 = validPlacementPiece4 = 1;
-
-                    memset(help, 0, sizeof(help));
-                    dfs_vertical(*data, 1, player->pieceCoordinate[0], player->pieceCoordinate[1], help, &validPlacementPiece1);
-                    memset(help, 0, sizeof(help));
-                    dfs_vertical(*data, 2, player->pieceCoordinate[2], player->pieceCoordinate[3], help, &validPlacementPiece2);
-                }
-                if (validPlacementPiece1 == 1 && validPlacementPiece2 == 1 && validPlacementPiece3 == 1 && validPlacementPiece4 == 1) {
-                    //printf("*******\n");
-
-                    if (HoV == 2) {//vertical wall
-                        if (index_i == 0 && data->board[index_i][index_j] != 7 && data->board[index_i + 1][index_j] != 7 && data->board[index_i + 2][index_j] != 7 && index_i + 1 < 2 * data->length) {
-                            /*if (data->board[index_i][index_j] != 7) {
-                                data->board[index_i][index_j] = 8;
-                            }*/
-
-                            int Xwall = (index_j / 2 + 1) * 5 * CELLSIZE;
-                            int Ywall = ((index_i / 2) * 5 + 1) * CELLSIZE;
-                            int widthWall = CELLSIZE;
-                            int heightWall = (4 * CELLSIZE);
-                            al_draw_filled_rectangle(Xwall, Ywall, Xwall + widthWall, Ywall + heightWall, al_map_rgb(38, 50, 56));
-                            /*if (data->board[index_i + 1][index_j] != 7) {
-                                data->board[index_i + 1][index_j] = 8;
-                            }*/
-                            index_i++;
-                            Xwall = ((index_j + 1) / 2) * 5 * CELLSIZE;
-                            Ywall = ((index_i + 1) / 2) * 5 * CELLSIZE;
-                            widthWall = CELLSIZE;
-                            heightWall = CELLSIZE;
-
-                            al_draw_filled_rectangle(Xwall, Ywall, Xwall + widthWall, Ywall + heightWall, al_map_rgb(38, 50, 56));
-                            index_i--;
-                            /*if (data->board[index_i + 2][index_j] != 7) {
-                                data->board[index_i + 2][index_j] = 8;
-                            }*/
-                            index_i += 2;
-                            Xwall = (index_j / 2 + 1) * 5 * CELLSIZE;
-                            Ywall = ((index_i / 2) * 5 + 1) * CELLSIZE;
-                            widthWall = CELLSIZE;
-                            heightWall = (4 * CELLSIZE);
-                            al_draw_filled_rectangle(Xwall, Ywall, Xwall + widthWall, Ywall + heightWall, al_map_rgb(38, 50, 56));
-                            index_i -= 2;
-                        }
-                        else if (index_i > 0 && data->board[index_i][index_j] != 7  /* && data->board[index_i - 1][index_j] != 7 */ && data->board[index_i - 2][index_j] != 7 && index_i + 1 < 2 * data->length && (data->board[index_i - 1][index_j] != 7 || data->board[index_i - 1][index_j - 1] == 7)) {
-                            /*if (data->board[index_i][index_j] != 7) {
-                                data->board[index_i][index_j] = 8;
-                            }*/
-                            int Xwall = (index_j / 2 + 1) * 5 * CELLSIZE;
-                            int Ywall = ((index_i / 2) * 5 + 1) * CELLSIZE;
-                            int widthWall = CELLSIZE;
-                            int heightWall = (4 * CELLSIZE);
-                            al_draw_filled_rectangle(Xwall, Ywall, Xwall + widthWall, Ywall + heightWall, al_map_rgb(38, 50, 56));
-                            /*if (data->board[index_i - 1][index_j] != 7) {
-                                data->board[index_i - 1][index_j] = 8;
-                            }*/
-                            index_i--;
-                            Xwall = ((index_j + 1) / 2) * 5 * CELLSIZE;
-                            Ywall = ((index_i + 1) / 2) * 5 * CELLSIZE;
-                            widthWall = CELLSIZE;
-                            heightWall = CELLSIZE;
-
-                            al_draw_filled_rectangle(Xwall, Ywall, Xwall + widthWall, Ywall + heightWall, al_map_rgb(38, 50, 56));
-                            index_i++;
-                            /*if (data->board[index_i - 2][index_j] != 7) {
-                                data->board[index_i - 2][index_j] = 8;
-                            }*/
-                            index_i -= 2;
-                            Xwall = (index_j / 2 + 1) * 5 * CELLSIZE;
-                            Ywall = ((index_i / 2) * 5 + 1) * CELLSIZE;
-                            widthWall = CELLSIZE;
-                            heightWall = (4 * CELLSIZE);
-                            al_draw_filled_rectangle(Xwall, Ywall, Xwall + widthWall, Ywall + heightWall, al_map_rgb(38, 50, 56));
-                            index_i += 2;
-                        }
-                    }
-                    else if (HoV == 3) {//horizontal wall
-                        if (index_j == 0 && data->board[index_i][index_j] != 7  /* && data->board[index_i][index_j + 1] != 7 */ && data->board[index_i][index_j + 2] != 7 && index_j + 1 < 2 * data->length && (data->board[index_i][index_j + 1] != 7)) {
-                            /*if (data->board[index_i][index_j] != 7) {
-                                data->board[index_i][index_j] = 8;
-                            }*/
-                            int wallX = ((index_j / 2) * 5 + 1) * CELLSIZE;
-                            int wallY = (index_i / 2 + 1) * 5 * CELLSIZE;
-                            int widthWall = (4 * CELLSIZE);
-                            int heightWall = CELLSIZE;
-                            al_draw_filled_rectangle(wallX, wallY, wallX + widthWall, wallY + heightWall, al_map_rgb(38, 50, 56));
-                            /*if (data->board[index_i][index_j + 1] != 7) {
-                                data->board[index_i][index_j + 1] = 8;
-                            }*/
-                            index_j++;
-                            wallX = ((index_j + 1) / 2) * 5 * CELLSIZE;
-                            wallY = ((index_i + 1) / 2) * 5 * CELLSIZE;
-                            widthWall = CELLSIZE;
-                            heightWall = CELLSIZE;
-
-                            al_draw_filled_rectangle(wallX, wallY, wallX + widthWall, wallY + heightWall, al_map_rgb(38, 50, 56));
-                            index_j--;
-                            /*if (data->board[index_i][index_j + 2] != 7) {
-                                data->board[index_i][index_j + 2] = 8;
-                            }*/
-                            index_j += 2;
-                            wallX = ((index_j / 2) * 5 + 1) * CELLSIZE;
-                            wallY = (index_i / 2 + 1) * 5 * CELLSIZE;
-                            widthWall = (4 * CELLSIZE);
-                            heightWall = CELLSIZE;
-                            al_draw_filled_rectangle(wallX, wallY, wallX + widthWall, wallY + heightWall, al_map_rgb(38, 50, 56));
-                            index_j -= 2;
-                        }
-                        else if (index_j > 0 && data->board[index_i][index_j] != 7 && /*data->board[index_i][index_j - 1] != 7 &&*/ data->board[index_i][index_j - 2] != 7 && index_j + 1 < 2 * data->length && (data->board[index_i][index_j - 1] != 7 || data->board[index_i - 1][index_j - 1] == 7)) {
-                            /*if (data->board[index_i][index_j] != 7) {
-                                data->board[index_i][index_j] = 8;
-                            }*/
-                            int wallX = ((index_j / 2) * 5 + 1) * CELLSIZE;
-                            int wallY = (index_i / 2 + 1) * 5 * CELLSIZE;
-                            int widthWall = (4 * CELLSIZE);
-                            int heightWall = CELLSIZE;
-                            al_draw_filled_rectangle(wallX, wallY, wallX + widthWall, wallY + heightWall, al_map_rgb(38, 50, 56));
-                            /*if (data->board[index_i][index_j - 1] != 7) {
-                                data->board[index_i][index_j - 1] = 8;
-                            }*/
-                            index_j--;
-                            wallX = ((index_j + 1) / 2) * 5 * CELLSIZE;
-                            wallY = ((index_i + 1) / 2) * 5 * CELLSIZE;
-                            widthWall = CELLSIZE;
-                            heightWall = CELLSIZE;
-
-                            al_draw_filled_rectangle(wallX, wallY, wallX + widthWall, wallY + heightWall, al_map_rgb(38, 50, 56));
-                            index_j++;
-                            /*if (data->board[index_i][index_j - 2] != 7) {
-                                data->board[index_i][index_j - 2] = 8;
-                            }*/
-                            index_j -= 2;
-                            wallX = ((index_j / 2) * 5 + 1) * CELLSIZE;
-                            wallY = (index_i / 2 + 1) * 5 * CELLSIZE;
-                            widthWall = (4 * CELLSIZE);
-                            heightWall = CELLSIZE;
-                            al_draw_filled_rectangle(wallX, wallY, wallX + widthWall, wallY + heightWall, al_map_rgb(38, 50, 56));
-                            index_j += 2;
-                        }
-                    }
-
-                }
-                else {
-                    for (int i = 0; i < 2 * data->length - 1; i++) {
-                        for (int j = 0; j < 2 * data->length - 1; j++) {
-                            if (data->board[i][j] == 8) {
-                                if (i % 2 == 1 && j % 2 == 1) {
-                                    data->board[i][j] = 9;
-                                }
-                                else {
-                                    data->board[i][j] = 0;
-                                }
-                            }
-                        }
-                    }
-                }
-                /*if (!(validPlacementPiece1 == 1 && validPlacementPiece2 == 1)) {
-                    for (int i = 0; i < 2 * data->length - 1; i++) {
-                        for (int j = 0; j < 2 * data->length - 1; j++) {
-
-                            printf("%d, ", data->board[i][j]);
-
-                        }
-                        printf("\n");
-                    }
-                }*/
 
             }
-        }
-        if (ev.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
-            //  int validPlacementPiece1 = 0, validPlacementPiece2 = 0;
-            if (ev.mouse.button & 1) {
-                /*int help[max_len][max_len];
-                memset(help, 0, sizeof(help));
-                dfs_vertical(*data, 1,player->pieceCoordinate[0], player->pieceCoordinate[1], help, &validPlacementPiece1);
-                memset(help, 0, sizeof(help));
-                dfs_vertical(*data, 2, player->pieceCoordinate[2], player->pieceCoordinate[3], help, &validPlacementPiece2);*/
-                printf("----------------------------------------------------\n");
-                /*for (int i = 0; i < 2 * data->length - 1; i++) {
+            else {
+                for (int i = 0; i < 2 * data->length - 1; i++) {
                     for (int j = 0; j < 2 * data->length - 1; j++) {
-                        printf("%d, ", data->board[i][j]);
-                    }
-                    printf("\n");
-                }*/
-                //printf("%d\n", index);
-
-                for (register int i = 0; i < 2 * data->length; i++) {
-                    for (register int j = 0; j < 2 * data->length; j++) {
-                        if (data->board[i][j] == 8 /* && validPlacementPiece1 == 1 && validPlacementPiece2 == 1*/) {
-                            data->board[i][j] = 7;
-                            *go = 1;
-
+                        if (data->board[i][j] == 8) {                        
+                            data->board[i][j] = 0;
+                        }
+                        if (data->board[i][j] == 10) {
+                            data->board[i][j] = 9;
                         }
                     }
-
                 }
-
-                break;
-
-
             }
-            //break;
+                
+
         }
-        i++;
-        al_flip_display();
-    } while (i < 10);
+    }
+        
+                
+    if (submit) {
+        for (register int i = 0; i < 2 * data->length; i++) {
+            for (register int j = 0; j < 2 * data->length; j++) {
+                if (data->board[i][j] == 8) {
+                    data->board[i][j] = 7;
+                    *checkingPut = 1;
+                }
+                if (data->board[i][j] == 10) {
+                    data->board[i][j] = 7;
+                }
+            }
+
+        }
+        
+    }
+    
+    al_flip_display();
 
     for (register int i = 0; i < 2 * data->length; i++) {
         for (int j = 0; j < 2 * data->length; j++) {
             if (data->board[i][j] == 0 && i % 2 == 1 && j % 2 == 1) data->board[i][j] = 9;
         }
     }
+    
 }
 void computerMove(struct BOARD* data, struct PLAYER* player) {
     srand(time(NULL));
@@ -986,12 +950,7 @@ void computerMove(struct BOARD* data, struct PLAYER* player) {
         }
     }
 
-    for (int i = 0; i < 2 * data->length - 1; i++) {
-        for (int j = 0; j < 2 * data->length - 1; j++) {
-            //printf("%d, ", data->board[i][j]);
-        }
-        printf("\n");
-    }
+    
 
     for (register int i = 0; i < 2 * data->length; i++) {
         for (register int j = 0; j < 2 * data->length; j++) {
@@ -1008,6 +967,9 @@ void computerWall(struct BOARD* data, struct PLAYER* player, int Multiplayer) {
         if (choose == 1) { //horizontall --> HoV = 3;
             index_i = rand() % (2 * data->length - 1);
             index_j = rand() % (2 * data->length - 1);
+            //if (data->board[index_i][index_j] == 9) {
+              //  continue;
+            //}eles{
             if (index_i == 0 && data->board[index_i][index_j] != 7 && data->board[index_i + 1][index_j] != 7 && data->board[index_i + 2][index_j] != 7 && index_i + 1 < 2 * data->length) {
                 //if (data->board[index_i][index_j] != 7) {
                 data->board[index_i][index_j] = 8;
@@ -1071,7 +1033,10 @@ void computerWall(struct BOARD* data, struct PLAYER* player, int Multiplayer) {
             }
 
         }
-        else continue;
+        else {
+            //printf("again\n");
+            continue;
+        }
 
         int validPlacementPiece1 = 0, validPlacementPiece2 = 0, validPlacementPiece3 = 0, validPlacementPiece4 = 0;
         int help[max_len][max_len];
@@ -1151,12 +1116,7 @@ void computerWall(struct BOARD* data, struct PLAYER* player, int Multiplayer) {
         }
 
 
-        for (int i = 0; i < 2 * data->length - 1; i++) {
-            for (int j = 0; j < 2 * data->length - 1; j++) {
-                printf("%d, ", data->board[i][j]);
-            }
-            printf("\n");
-        }
+        
 
         break;
     }
@@ -1173,9 +1133,18 @@ void computerPlayer(struct BOARD* data, struct PLAYER* player, int Multiplayer) 
         computerWall(&data, &player, Multiplayer);
     }
 }
+void showButton(Button* show) {
+    ALLEGRO_FONT* font = al_create_builtin_font();
+    al_draw_filled_rectangle(show->posX, show->posY, show->width, show->height, al_map_rgb(253, 216, 53));
+    al_draw_text(font, al_map_rgb(0, 0, 0), (show->posX + show->width) / 2, (show->posY + show->height) / 2, ALLEGRO_ALIGN_CENTRE, show->name);
+}
+int checkButton(Button* show, int x_coordinate, int y_coordinate) {
+    return (x_coordinate >= show->posX && x_coordinate <= show->width && y_coordinate >= show->posY && y_coordinate <= show->height);
+}
 
 int main() {
     int count, go = 0, pointer;
+    bool checkingWall = 0, checkingPiece = 0;
     struct BOARD data;
     struct PLAYER player;
     struct CHARM charm;
@@ -1192,16 +1161,40 @@ int main() {
     al_init_image_addon();
     al_install_mouse();
     event_queue = al_create_event_queue();
+    player1 = al_load_bitmap("./iran.png");
     // Create a display
+    ALLEGRO_EVENT event;
     ALLEGRO_BITMAP* Player;
     ALLEGRO_DISPLAY* display = al_create_display((5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE, (5 * data.length + 1) * CELLSIZE);
     al_register_event_source(event_queue, al_get_display_event_source(display));
     al_register_event_source(event_queue, al_get_mouse_event_source());
     //al_hide_mouse_cursor(display);
     // Set the background color
-    al_clear_to_color(al_map_rgb(144, 202, 249));
-    al_draw_filled_rectangle((5 * data.length + 1) * CELLSIZE, 0, (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE, (5 * data.length + 1) * CELLSIZE, al_map_rgb(38, 50, 56));
-    makePrimaryBoard(&data);
+
+    int width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
+    int height = (5 * data.length + 1) * CELLSIZE;
+    
+     makePrimaryBoard(&data);
+     Button save;
+     save.posX = width * 80 / 100;
+     save.posY = height * 10 / 100;
+     save.width = width * 90 / 100;
+     save.height = height * 15 / 100;
+     strcpy_s(save.name, 5, "SAVE");
+     
+     
+     Button load;
+     load.posX = width * 80 / 100;
+     load.posY = height * 30 / 100;
+     load.width = width * 90 / 100;
+     load.height = height * 35 / 100;
+     strcpy_s(load.name, 5, "LOAD");
+
+     showBoard(data);
+     showButton(&save);
+     showButton(&load);
+     ALLEGRO_BITMAP* oldDisplay;
+
     if (Multiplayer == 4) {
         //printf("%d\n", data.length);
         data.board[0][data.length - data.length % 2] = 1;
@@ -1219,60 +1212,128 @@ int main() {
         player.pieceCoordinate[6] = data.length - data.length % 2;
         player.pieceCoordinate[7] = data.length * 2 - data.length % 2 - 2;
         //}
-        for (int i = 0; i < 2 * data.length; i++) {
-            for (int j = 0; j < 2 * data.length; j++) {
-                //if (i % 2 == 0 && j % 2 == 0) {
-                printf("%d ", data.board[i][j]);
-                //}
-            }
-            printf("\n");
-        }
+
+       
+        
 
         int m = 0;
-        while (1) {
-            luck(&data, &player, &charm, &present, Multiplayer);
 
+        
+        while (1) {
+            checkingWall = 0;
+            checkingPiece = 0;
+            //luck(&data, &player, &charm, &present, Multiplayer);
+            
             if (m % 4 == 0)player.term = 1;
             else if (m % 4 == 1) player.term = 2;
             else if (m % 4 == 2) player.term = 3;
             else if (m % 4 == 3)player.term = 4;
 
-            showBoard(data);
+            //showBoard(data);
             movePiecePossiblities(&data, &player);
             movePiecePossiblitiesJump(&data, &player);
             movePiecePossiblitiesParties(&data, &player);
             //putWalls(&data, &player, event_queue, ev);
+            
             showBoard(data);
-
+            showButton(&save);
+            showButton(&load);
+            al_flip_display();
+            oldDisplay = al_clone_bitmap(al_get_backbuffer(display));
+            
             while (1) {
-                //showBoard(data);
-                delete_wall(&data);
-                showBoard(data);
-                putWalls(&data, &player, event_queue, ev, &go, 4);
+                printf("****\n");
+                al_wait_for_event(event_queue, &event);
 
-
-                showBoard(data);
-
-                //al_flip_display();
-                if (go == 1) {
-
-                    break;
+                if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+                    return 0;
                 }
-                showBoard(data);
+
+                if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
+                    if (event.mouse.button == 1) {
+
+                        if(checkButton(&save, event.mouse.x, event.mouse.y)){
+                            FILE *file;
+                            fopen_s(&file,"./Save.dat", "wb");
+                            fwrite(&data, sizeof(data), 1, file);
+                            fwrite(&player, sizeof(player), 1, file);
+                            fclose(file);
+                            continue;
+                        }
+                        if(checkButton(&load, event.mouse.x, event.mouse.y)){
+                            FILE *file;
+                            fopen_s(&file,"./Save.dat", "rb");
+                            if (!file) continue;
+                            fread(&data, sizeof(data), 1, file);
+                            fread(&player, sizeof(player), 1, file);
+                            al_unregister_event_source(event_queue, al_get_display_event_source(display));
+
+                            al_destroy_display(display);
+                            display = al_create_display((5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE, (5 * data.length + 1) * CELLSIZE);
+                            al_register_event_source(event_queue, al_get_display_event_source(display));
+                            width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
+                            height = (5 * data.length + 1) * CELLSIZE;
+
+                            Button save;
+                            save.posX = width * 80 / 100;
+                            save.posY = height * 10 / 100;
+                            save.width = width * 90 / 100;
+                            save.height = height * 15 / 100;
+                            strcpy_s(save.name, 5, "SAVE");
 
 
-                showBoard(data);
+                            Button load;
+                            load.posX = width * 80 / 100;
+                            load.posY = height * 30 / 100;
+                            load.width = width * 90 / 100;
+                            load.height = height * 35 / 100;
+                            strcpy_s(load.name, 5, "LOAD");
+
+                            showBoard(data);
+                            showButton(&save);
+                            showButton(&load);
+                            al_flip_display();
+                            oldDisplay = al_clone_bitmap(al_get_backbuffer(display));
+
+                          
+                            
+                            fclose(file);
+                            continue;
+                        }
+
+
+                        
+                        putWalls(&data, &player, event_queue, ev, &go, 4, event.mouse.x, event.mouse.y, 1, &checkingWall);
+                        //printf("%d\n", putWalls(&data, &player, event_queue, ev, &go, 4, event.mouse.x, event.mouse.y, 1));
+                        movePiece(&data, &player, event_queue, ev, event.mouse.x, event.mouse.y, &checkingPiece);
+                       // printf("%d\n", movePiece(&data, &player, event_queue, ev, event.mouse.x, event.mouse.y));
+                        m = m + (checkingPiece + checkingWall);
+                        
+                        showBoard(data);
+                        showButton(&save);
+                        showButton(&load);
+                        
+                        al_flip_display();
+                        
+                        break;
+                    }
+                }
+
+                if (event.type == ALLEGRO_EVENT_MOUSE_AXES) {
+                    al_draw_bitmap(oldDisplay, 0, 0, 0);
+                    putWalls(&data, &player, event_queue, ev, &go, 4, event.mouse.x, event.mouse.y, 0, &checkingWall);
+                    
+                }
+                
+                
 
             }
-            showBoard(data);
+            
+            //movePiece(&data, &player, event_queue, ev);
 
-            movePiece(&data, &player, event_queue, ev);
 
-
-            showBoard(data);
-
-            m++;
-            al_flip_display();
+            //showBoard(data);
+            
 
 
 
@@ -1290,7 +1351,7 @@ int main() {
 
     //------------------------------------------------------------------------------------------------------------------------------------------------
 
-    if (Multiplayer == 2) {
+    /*if (Multiplayer == 2) {
         data.board[0][data.length - data.length % 2] = 1;
         data.board[data.length * 2 - 2][data.length - data.length % 2] = 2;
         player.pieceCoordinate[0] = 0;
@@ -1382,5 +1443,5 @@ int main() {
         al_destroy_display(display);
 
         return 0;
-    }
+    }*/
 }

@@ -52,3 +52,5 @@ int isWallPlacementValid(char Board[][57], int piece[], int sw, int rowWall, int
 
     return player1CanReach && player2CanReach;
 }
+
+

@@ -29,14 +29,26 @@ ALLEGRO_BITMAP* Saving;
 ALLEGRO_BITMAP* loading;
 ALLEGRO_BITMAP* background;
 ALLEGRO_FONT* customFont;
+ALLEGRO_FONT* font;
 enum page { endOfGame, firstMenu, playMenu, loadGame, setting, startGame} page = firstMenu;
 struct BOARD {
     int board[max_len][max_len];
     int length;
 };
+struct Setting {
+    ALLEGRO_BITMAP* length;
+    ALLEGRO_BITMAP* numberWall;
+    ALLEGRO_BITMAP* Equal;
+    ALLEGRO_BITMAP* leftFlash1;
+    ALLEGRO_BITMAP* rightFlash1;
+    ALLEGRO_BITMAP* leftFlash2;
+    ALLEGRO_BITMAP* rightFlash2;
+};
+typedef struct Setting imgSet;
 struct PLAYER {
     int term;
     int countWall[4];
+    int numberWall;
     int pieceCoordinate[8];
 };
 struct sidbar {
@@ -1273,6 +1285,7 @@ int main() {
     struct imgPossiblityPlayer showPossiblity;
     struct imgWall Walls;
     struct sidbar menu;
+    imgSet icon;
     int Multiplayer;
     
     //printf("enter the length of the board: ");
@@ -1282,6 +1295,7 @@ int main() {
     //scanf_s("%d", &Multiplayer);
     //-------------Difine length = 12----------------
     data.length = 12;
+    player.numberWall = 12;
     // Initialize Allegro
     al_init();
     al_init_primitives_addon();
@@ -1303,7 +1317,14 @@ int main() {
     Walls.putWall = al_load_bitmap("./put-wall.png");
     //menu.new = al_load_bitmap("./menubar.png");
     background = al_load_bitmap("./Backgroung.jpg");
-    customFont = al_load_ttf_font("./Groovetastic Free.ttf", 24, 0);
+    customFont = al_load_ttf_font("./Groovetastic Free.ttf", 30, 0);
+    font = al_load_ttf_font("./Lonely Night.ttf", 70, 0);
+    icon.length = al_load_bitmap("./Board.png");
+    icon.Equal = al_load_bitmap("./equal.png");
+    icon.leftFlash1 = al_load_bitmap("./left-arrow(1).png");
+    icon.rightFlash1 = al_load_bitmap("./right-arrow(1).png");
+    icon.leftFlash2 = al_load_bitmap("./left-arrow(2).png");
+    icon.rightFlash2 = al_load_bitmap("./right-arrow(2).png");
    
     if (!customFont) {
         fprintf(stderr, "Error loading font\n");
@@ -1452,6 +1473,7 @@ int main() {
          }
          if (page == setting) {
              //printf("%d", page);
+             al_reserve_samples(1);
              ALLEGRO_DISPLAY* display = al_create_display((5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE, (5 * data.length + 1) * CELLSIZE);
              ALLEGRO_EVENT event;
              ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
@@ -1464,10 +1486,102 @@ int main() {
              width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
              height = (5 * data.length + 1) * CELLSIZE;
              al_draw_line(0,  height * 5 / 100, width, height * 5 / 100, al_map_rgb(0, 0, 0),5.0);
-             al_draw_text(customFont, al_map_rgb(0, 0, 0), width / 2, height / 10, ALLEGRO_ALIGN_CENTRE, "SETTING");
+             al_draw_text(customFont, al_map_rgb(0, 0, 0), width / 2, height / 10 - 10, ALLEGRO_ALIGN_CENTRE, "SETTING");
              al_draw_line(0,  height * 15 / 100, width, height * 15 / 100, al_map_rgb(0, 0, 0),5.0);
+             int Xpiece = width * 5 / 100;
+             int Ypiece = height * 8 / 100;
+             int widthPiece = width * 10 / 100;
+             int heightPiece = height * 15 / 100;
+             al_draw_scaled_bitmap(icon.length, 0, 0, al_get_bitmap_width(icon.length), al_get_bitmap_height(icon.length), Xpiece + 200, Ypiece + 50, widthPiece, heightPiece, 0);
+             //al_draw_text(customFont, al_map_rgb(0, 0, 0), (Xpiece + widthPiece) / 2 + 120, (Ypiece + 50 + heightPiece) / 2 + 20, ALLEGRO_ALIGN_CENTRE, "=");
+             Xpiece = width * 3 / 100;
+             Ypiece = height * 3 / 100;
+             widthPiece = width * 5 / 100;
+             heightPiece = height * 5 / 100;
+             al_draw_scaled_bitmap(icon.Equal, 0, 0, al_get_bitmap_width(icon.Equal), al_get_bitmap_height(icon.Equal), Xpiece + 110 + 200, Ypiece + 120, widthPiece , heightPiece, 0);
+             Button leftArrow1;
+             leftArrow1.posX = ((width * 3) / 100)  + 105 + 90 + 200;
+             leftArrow1.posY = ((height * 3) / 100) + 115;
+             leftArrow1.width = ((width * 5) / 100) + leftArrow1.posX;
+             leftArrow1.height = ((height * 5) / 100) + leftArrow1.posY;
+             al_draw_scaled_bitmap(icon.leftFlash1, 0, 0, al_get_bitmap_width(icon.leftFlash1), al_get_bitmap_height(icon.leftFlash1), leftArrow1.posX, leftArrow1.posY, leftArrow1.width - leftArrow1.posX, leftArrow1.height - leftArrow1.posY, 0);
+
+             Button rightArrow1;
+             rightArrow1.posX = width * 3 / 100 + 105 + 90 + 180 + 200;
+             rightArrow1.posY = height * 3 / 100 + 115;
+             rightArrow1.width = width * 5 / 100 + rightArrow1.posX;
+             rightArrow1.height = height * 5 / 100 + rightArrow1.posY;
+             
+             al_draw_scaled_bitmap(icon.rightFlash1, 0, 0, al_get_bitmap_width(icon.rightFlash1), al_get_bitmap_height(icon.rightFlash1), rightArrow1.posX, rightArrow1.posY, rightArrow1.width - rightArrow1.posX, rightArrow1.height - rightArrow1.posY, 0);
+             al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow1.posX + leftArrow1.posX) / 2, (rightArrow1.posY + leftArrow1.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", player.numberWall);
+
+             //-----------------------------------------------------------countWall----------------
+             Xpiece = width * 5 / 100;
+             Ypiece = height * 8 / 100;
+             widthPiece = width * 10 / 100;
+             heightPiece = height * 15 / 100;
+             al_draw_scaled_bitmap(Walls.putWall, 0, 0, al_get_bitmap_width(Walls.putWall), al_get_bitmap_height(Walls.putWall), Xpiece + 200, Ypiece + 50 + 100, widthPiece, heightPiece, 0);
+             //al_draw_text(customFont, al_map_rgb(0, 0, 0), (Xpiece + widthPiece) / 2 + 120, (Ypiece + 50 + heightPiece) / 2 + 20, ALLEGRO_ALIGN_CENTRE, "=");
+             Xpiece = width * 3 / 100;
+             Ypiece = height * 3 / 100;
+             widthPiece = width * 5 / 100;
+             heightPiece = height * 5 / 100;
+             al_draw_scaled_bitmap(icon.Equal, 0, 0, al_get_bitmap_width(icon.Equal), al_get_bitmap_height(icon.Equal), Xpiece + 110 + 200, Ypiece + 120 + 100, widthPiece, heightPiece, 0);
+             Button leftArrow2;
+             leftArrow2.posX = width * 3 / 100 + 105 + 90 + 200;
+             leftArrow2.posY = height * 3 / 100 + 115 + 100;
+             leftArrow2.width = width * 5 / 100 + leftArrow2.posX;
+             leftArrow2.height = height * 5 / 100 + leftArrow2.posY;
+             al_draw_scaled_bitmap(icon.leftFlash2, 0, 0, al_get_bitmap_width(icon.leftFlash2), al_get_bitmap_height(icon.leftFlash2), leftArrow2.posX, leftArrow2.posY, leftArrow2.width - leftArrow2.posX, leftArrow2.height - leftArrow2.posY, 0);
+
+             Button rightArrow2;
+             rightArrow2.posX = width * 3 / 100 + 105 + 90 + 180 + 200;
+             rightArrow2.posY = height * 3 / 100 + 115 + 100;
+             rightArrow2.width = width * 5 / 100 + rightArrow2.posX;
+             rightArrow2.height = height * 5 / 100 + rightArrow2.posY;
+             al_draw_scaled_bitmap(icon.rightFlash2, 0, 0, al_get_bitmap_width(icon.rightFlash2), al_get_bitmap_height(icon.rightFlash2), rightArrow2.posX, rightArrow2.posY, rightArrow2.width - rightArrow2.posX, rightArrow2.height - rightArrow2.posY, 0);
+             al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow2.posX + leftArrow2.posX) / 2, (rightArrow2.posY + leftArrow2.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", player.numberWall);
+
              al_flip_display();
              while (1) {
+                 al_wait_for_event(queue, &event);
+                 if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+                     return 0;
+                 }
+                 if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
+                     if (event.mouse.button == 1) {
+                         if (checkButton(&leftArrow1, event.mouse.x, event.mouse.y)) {
+                             if (data.length <= 14 && data.length > 6) {
+                                 data.length -= 1;
+                                 al_draw_filled_rectangle((rightArrow1.posX + leftArrow1.posX) / 2 - 30, (rightArrow1.posY + leftArrow1.posY) / 2 - 10 , (rightArrow1.posX + leftArrow1.posX) / 2 + 30, (rightArrow1.posY + leftArrow1.posY) / 2 + 30, al_map_rgb(120, 144, 156));
+                                 al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow1.posX + leftArrow1.posX) / 2, (rightArrow1.posY + leftArrow1.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", data.length);
+                                 al_flip_display();
+                             }
+                         }
+                         if (checkButton(&rightArrow1, event.mouse.x, event.mouse.y)) {
+                             if (data.length < 14 && data.length >= 6) {
+                                 data.length += 1;
+                                 al_draw_filled_rectangle((rightArrow1.posX + leftArrow1.posX) / 2 - 30, (rightArrow1.posY + leftArrow1.posY) / 2 - 10, (rightArrow1.posX + leftArrow1.posX) / 2 + 30, (rightArrow1.posY + leftArrow1.posY) / 2 + 30, al_map_rgb(120, 144, 156));
+                                 al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow1.posX + leftArrow1.posX) / 2, (rightArrow1.posY + leftArrow1.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", data.length);
+                             }
+                         }
+                         if (checkButton(&leftArrow2, event.mouse.x, event.mouse.y)) {
+                             if (player.numberWall <= 14 && player.numberWall > 6) {
+                                 player.numberWall -= 1;
+                                 al_draw_filled_rectangle((rightArrow1.posX + leftArrow1.posX) / 2 - 30, (rightArrow1.posY + leftArrow1.posY) / 2 + 90, (rightArrow1.posX + leftArrow1.posX) / 2 + 30, (rightArrow1.posY + leftArrow1.posY) / 2 + 130, al_map_rgb(120, 144, 156));
+                                 al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow2.posX + leftArrow2.posX) / 2, (rightArrow2.posY + leftArrow2.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", player.numberWall);
+                             }
+                         }
+                         if (checkButton(&rightArrow2, event.mouse.x, event.mouse.y)) {
+                             if (player.numberWall < 14 && player.numberWall >= 6) {
+                                 player.numberWall += 1;
+                                 al_draw_filled_rectangle((rightArrow1.posX + leftArrow1.posX) / 2 - 30, (rightArrow1.posY + leftArrow1.posY) / 2 + 90, (rightArrow1.posX + leftArrow1.posX) / 2 + 30, (rightArrow1.posY + leftArrow1.posY) / 2 + 130, al_map_rgb(120, 144, 156));
+                                 al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow2.posX + leftArrow2.posX) / 2, (rightArrow2.posY + leftArrow2.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", player.numberWall);
+                             }
+                         }
+                         al_flip_display();
+                     }
+                 }
 
              }
          }

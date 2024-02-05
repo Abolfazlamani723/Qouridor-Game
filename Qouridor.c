@@ -3,6 +3,7 @@
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro_font.h>
+#include <allegro5/allegro_ttf.h>
 #include <allegro5/allegro_native_dialog.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_audio.h>
@@ -13,7 +14,7 @@
 #include <string.h>
 #include <time.h>
 
-ALLEGRO_EVENT_QUEUE* event_queue = NULL;
+
 ALLEGRO_EVENT ev;
 #define CELLSIZE 10
 #define max_len 29
@@ -22,10 +23,13 @@ int mouseButton;
 ALLEGRO_SAMPLE* audioPiece;
 ALLEGRO_SAMPLE* audioWall;
 ALLEGRO_SAMPLE* audioClick;
+ALLEGRO_SAMPLE* audioBackgrond;
 ALLEGRO_BITMAP* Square;
 ALLEGRO_BITMAP* Saving;
 ALLEGRO_BITMAP* loading;
-
+ALLEGRO_BITMAP* background;
+ALLEGRO_FONT* customFont;
+enum page { endOfGame, firstMenu, playMenu, loadGame, setting, startGame} page = firstMenu;
 struct BOARD {
     int board[max_len][max_len];
     int length;
@@ -34,6 +38,12 @@ struct PLAYER {
     int term;
     int countWall[4];
     int pieceCoordinate[8];
+};
+struct sidbar {
+    ALLEGRO_BITMAP* new;
+    ALLEGRO_BITMAP* load;
+    ALLEGRO_BITMAP* setting;
+    ALLEGRO_BITMAP* exit;
 };
 struct imgPlayer {
     ALLEGRO_BITMAP* Piece1;
@@ -655,43 +665,63 @@ int dfs_vertical(struct BOARD data, int term, int start_row, int start_col, int 
             }
         }
         if (term == 1) {
-            for (int i = 0; i < 2 * data.length - 1; i += 2) {
+            /*for (int i = 0; i < 2 * data.length - 1; i += 2) {
                 if (help[2 * data.length - 2][i] == 1) {
                     //printf("Yes1\n");
                     *index = 1;
                     top = -1;
                     return;
                 }
+            }*/
+            if (row == 2 * data.length - 2 && help[row][col] == 1) {
+                *index = 1;
+                top = -1;
+                return;
             }
         }
         else if (term == 2) {
-            for (int i = 0; i < 2 * data.length - 1; i += 2) {
+            /*for (int i = 0; i < 2 * data.length - 1; i += 2) {
                 if (help[0][i] == 1) {
                     // printf("Yes2\n");
                     *index = 1;
                     top = -1;
                     return;
                 }
+            }*/
+            if (row == 0 && help[row][col] == 1) {
+                *index = 1;
+                top = -1;
+                return;
             }
         }
         else if (term == 3) {
-            for (int i = 0; i < 2 * data.length - 1; i += 2) {
+            /*for (int i = 0; i < 2 * data.length - 1; i += 2) {
                 if (help[i][2 * data.length - 2] == 1) {
                     //printf("Yes3\n");
                     *index = 1;
                     top = -1;
                     return;
                 }
+            }*/
+            if (col == 2 * data.length - 2 && help[row][col] == 1) {
+                *index = 1;
+                top = -1;
+                return;
             }
         }
         else if (term == 4) {
-            for (int i = 0; i < 2 * data.length - 1; i += 2) {
+            /*for (int i = 0; i < 2 * data.length - 1; i += 2) {
                 if (help[i][0] == 1) {
                     //printf("Yes4\n");
                     *index = 1;
                     top = -1;
                     return;
                 }
+            }*/
+            if (col == 0 && help[row][col] == 1) {
+                *index = 1;
+                top = -1;
+                return;
             }
         }
 
@@ -1222,9 +1252,9 @@ void computerPlayer(struct BOARD* data, struct PLAYER* player, int Multiplayer) 
     }
 }
 void showButton(Button* show) {
-    ALLEGRO_FONT* font = al_create_builtin_font();
-    al_draw_filled_rectangle(show->posX, show->posY, show->width, show->height, al_map_rgb(255, 234, 0));
-    al_draw_text(font, al_map_rgb(0, 0, 0), (show->posX + show->width) / 2, (show->posY + show->height) / 2, ALLEGRO_ALIGN_CENTRE, show->name);
+    
+    al_draw_filled_rectangle(show->posX, show->posY, show->width, show->height, al_map_rgb(161, 127, 136));
+    al_draw_text(customFont, al_map_rgb(0, 0, 0), (show->posX + show->width) / 2, (show->posY + show->height) / 2, ALLEGRO_ALIGN_CENTRE, show->name);
     //al_draw_scaled_bitmap(Saving, 0, 0, al_get_bitmap_width(Saving), al_get_bitmap_height(Saving), show->posX , show->posY , show->width, show->height , 0);
 
 }
@@ -1242,19 +1272,26 @@ int main() {
     struct imgPlayer showPlayer;
     struct imgPossiblityPlayer showPossiblity;
     struct imgWall Walls;
+    struct sidbar menu;
     int Multiplayer;
-    printf("enter the length of the board: ");
+    
+    //printf("enter the length of the board: ");
 
-    scanf_s("%d", &data.length);
-    printf("Do you want to play for two or four players?");
-    scanf_s("%d", &Multiplayer);
+    ///scanf_s("%d", &data.length);
+    //printf("Do you want to play for two or four players?");
+    //scanf_s("%d", &Multiplayer);
+    //-------------Difine length = 12----------------
+    data.length = 12;
     // Initialize Allegro
     al_init();
     al_init_primitives_addon();
     al_init_image_addon();
     al_install_mouse();
     al_install_audio();
-    event_queue = al_create_event_queue();
+    al_init_acodec_addon();
+    al_init_font_addon(); // Initialize the font add-on
+    al_init_ttf_addon();  // Initialize the TrueType font add-on
+    ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
     showPlayer.Piece1 = al_load_bitmap("./knight (1).png");
     showPlayer.Piece2 = al_load_bitmap("./strategy (2).png");
     showPlayer.Piece3 = al_load_bitmap("./king(3).png");
@@ -1264,6 +1301,25 @@ int main() {
     showPossiblity.Player3 = al_load_bitmap("./king_possiblity(3).png");
     showPossiblity.Player4 = al_load_bitmap("./rook_Possiblity (4).png");
     Walls.putWall = al_load_bitmap("./put-wall.png");
+    //menu.new = al_load_bitmap("./menubar.png");
+    background = al_load_bitmap("./Backgroung.jpg");
+    customFont = al_load_ttf_font("./Groovetastic Free.ttf", 24, 0);
+   
+    if (!customFont) {
+        fprintf(stderr, "Error loading font\n");
+        return -1;
+    }
+    
+    audioWall = al_load_sample("D:\\Game in VS\\Project1\\Project1\\wall.wav");
+    audioPiece = al_load_sample("D:\\Game in VS\\Project1\\Project1\\move.wav");
+    audioClick = al_load_sample("D:\\Game in VS\\Project1\\Project1\\click.wav");
+    audioBackgrond = al_load_sample("D:\\Game in VS\\Project1\\Project1\\Background.wav");
+
+    if (!al_reserve_samples(1)) {
+        fprintf(stderr, "Failed to reserve samples.\n");
+        return -1;
+    }
+
     /*Walls.hoverWall = al_load_bitmap("./hover-wall (1).png");
     Square = al_load_bitmap("./Square.png");
     Saving = al_load_bitmap("./save (2).png");
@@ -1272,316 +1328,441 @@ int main() {
 
 
 
-    //audioPiece = al_load_sample("./move.wav");
     
-    // Initialize Allegro Acodec (audio addon)
     if (!al_init_acodec_addon()) {
         fprintf(stderr, "Failed to initialize Allegro Acodec.\n");
         return -1;
     }
 
-    // Reserve samples
-    if (!al_reserve_samples(1)) {
-        fprintf(stderr, "Failed to reserve samples.\n");
-        return -1;
-    }
-
-    audioWall = al_load_sample("D:\\Game in VS\\Project1\\Project1\\wall.wav");
-    audioPiece = al_load_sample("D:\\Game in VS\\Project1\\Project1\\move.wav");
-    audioClick = al_load_sample("D:\\Game in VS\\Project1\\Project1\\click.wav");
-    // Create a display
-    ALLEGRO_EVENT event;
-    ALLEGRO_BITMAP* Player;
-    ALLEGRO_DISPLAY* display = al_create_display((5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE, (5 * data.length + 1) * CELLSIZE);
-    al_register_event_source(event_queue, al_get_display_event_source(display));
-    al_register_event_source(event_queue, al_get_mouse_event_source());
-    //al_hide_mouse_cursor(display);
-    // Set the background color
-
-    int width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
-    int height = (5 * data.length + 1) * CELLSIZE;
     
-     makePrimaryBoard(&data);
-     Button save;
-     save.posX = width * 80 / 100;
-     save.posY = height * 10 / 100;
-     save.width = width * 90 / 100;
-     save.height = height * 15 / 100;
-     strcpy_s(save.name, 5, "SAVE");
-     
-     
-     Button load;
-     load.posX = width * 80 / 100;
-     load.posY = height * 30 / 100;
-     load.width = width * 90 / 100;
-     load.height = height * 35 / 100;
-     strcpy_s(load.name, 5, "LOAD");
+    //--------------------------------------$inGame&---------------------------------------------------------------//
+    
+    //ALLEGRO_DISPLAY* display = al_create_display((5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE, (5 * data.length + 1) * CELLSIZE);
+   
+    
+    int width, height;
+     page = firstMenu;
+     while (page) {
+         
+         if (page == firstMenu) {
+             
+             
+             ALLEGRO_EVENT event;
+             
+             ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
+             ALLEGRO_DISPLAY* display = al_create_display((5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE, (5 * data.length + 1) * CELLSIZE);
+             al_register_event_source(queue, al_get_mouse_event_source());
 
-     showBoard(data, showPlayer, showPossiblity, Walls);
-     showButton(&save);
-     showButton(&load);
-     ALLEGRO_BITMAP* oldDisplay;
+             al_register_event_source(queue, al_get_display_event_source(display));
+             
+             al_reserve_samples(1);
+             al_draw_scaled_bitmap(background, 0, 0, al_get_bitmap_width(background), al_get_bitmap_height(background), 0, 0, (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE, (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE, 0);
+             al_play_sample(audioBackgrond, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+             Button NewGame;
+             width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
+             height = (5 * data.length + 1) * CELLSIZE;
+             NewGame.posX = width * 70 / 100;
+             NewGame.posY = height * 10 / 100;
+             NewGame.width = width * 85 / 100;
+             NewGame.height = height * 20 / 100;
+             strcpy_s(NewGame.name, 9, "New Game");
+             showButton(&NewGame);
+             //al_flip_display();
+             Button LoadGame;
+             width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
+             height = (5 * data.length + 1) * CELLSIZE;
+             LoadGame.posX = width * 70 / 100;
+             LoadGame.posY = height * 25 / 100;
+             LoadGame.width = width * 85 / 100;
+             LoadGame.height = height * 35 / 100;
+             strcpy_s(LoadGame.name, 10, "Load Game");
+             showButton(&LoadGame);
+             //al_flip_display();
+             Button Setting;
+             width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
+             height = (5 * data.length + 1) * CELLSIZE;
+             Setting.posX = width * 70 / 100;
+             Setting.posY = height * 40 / 100;
+             Setting.width = width * 85 / 100;
+             Setting.height = height * 50 / 100;
+             strcpy_s(Setting.name, 10, "Setting");
+             showButton(&Setting);
+             //al_flip_display();
+             Button exit;
+             width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
+             height = (5 * data.length + 1) * CELLSIZE;
+             exit.posX = width * 70 / 100;
+             exit.posY = height * 55 / 100;
+             exit.width = width * 85 / 100;
+             exit.height = height * 65 / 100;
+             strcpy_s(exit.name, 6, "exit");
+             showButton(&exit);
+             al_flip_display();
+             
+             while (1) {
+                 al_wait_for_event(queue, &event);
+                 if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+                     return 0;
+                 }
+                 if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
+                     if (event.mouse.button == 1) {
+                         if (checkButton(&NewGame, event.mouse.x, event.mouse.y)) {
+                             al_destroy_sample(audioBackgrond);
+                             
+                             //al_play_sample(audioClick, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+                             page = playMenu;
+                             //al_flip_display();
+                             break;
 
-    if (Multiplayer == 4) {
-        //printf("%d\n", data.length);
-        data.board[0][data.length - data.length % 2] = 1;
-        data.board[data.length * 2 - 2][data.length - data.length % 2] = 2;
-        data.board[(data.length - data.length % 2)][0] = 3;
-        data.board[(data.length - data.length % 2)][data.length * 2 - data.length % 2 - 2] = 4;
-        //player.term = 1;
-        //if (data.length % 2 == 0) {
-        player.pieceCoordinate[0] = 0;
-        player.pieceCoordinate[1] = data.length - data.length % 2;
-        player.pieceCoordinate[2] = data.length * 2 - 2;
-        player.pieceCoordinate[3] = data.length - data.length % 2;
-        player.pieceCoordinate[4] = data.length - data.length % 2;
-        player.pieceCoordinate[5] = 0;
-        player.pieceCoordinate[6] = data.length - data.length % 2;
-        player.pieceCoordinate[7] = data.length * 2 - data.length % 2 - 2;
-        //}
+                         }
+                         if (checkButton(&LoadGame, event.mouse.x, event.mouse.y)) {
+                            al_destroy_sample(audioBackgrond);
+                             //al_play_sample(audioClick, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+                             page = loadGame;
+                             //al_flip_display();
+                             break;
 
-       
-        
+                         }
+                         if (checkButton(&Setting, event.mouse.x, event.mouse.y)) {
+                             al_destroy_sample(audioBackgrond);
+                             //al_play_sample(audioClick, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+                             page = setting;
+                             ////al_flip_display();
+                             break;
 
-        int m = 0;
+                         }
+                         if (checkButton(&exit, event.mouse.x, event.mouse.y)) {
+                             al_destroy_sample(audioBackgrond);
+                             
+                             page = endOfGame;
+                             //al_flip_display();
+                             break;
+                         }
+                     }
+                 }
+             }
+             printf("%d", page);
+             al_play_sample(audioClick, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+             al_flip_display();
+             //al_destroy_sample(audioBackgrond);
+             //al_destroy_sample(audioClick);
+             
+             al_destroy_display(display);
+             
+         }
+         if (page == setting) {
+             //printf("%d", page);
+             ALLEGRO_DISPLAY* display = al_create_display((5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE, (5 * data.length + 1) * CELLSIZE);
+             ALLEGRO_EVENT event;
+             ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
+             al_register_event_source(queue, al_get_mouse_event_source());
 
-        
-        while (1) {
-            checkingWall = 0;
-            checkingPiece = 0;
-            //luck(&data, &player, &charm, &present, Multiplayer);
-            
-            if (m % 4 == 0)player.term = 1;
-            else if (m % 4 == 1) player.term = 2;
-            else if (m % 4 == 2) player.term = 3;
-            else if (m % 4 == 3)player.term = 4;
+             al_register_event_source(queue, al_get_display_event_source(display));
+             al_reserve_samples(1);
+             al_clear_to_color(al_map_rgb(120, 144, 156));
+             //al_draw_filled_rectangle((5 * data.length + 1)* CELLSIZE, 0, (5 * data.length + 1)* CELLSIZE + 20 * CELLSIZE, (5 * data.length + 1)* CELLSIZE, al_map_rgb(144, 164, 174));
+             width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
+             height = (5 * data.length + 1) * CELLSIZE;
+             al_draw_line(0,  height * 5 / 100, width, height * 5 / 100, al_map_rgb(0, 0, 0),5.0);
+             al_draw_text(customFont, al_map_rgb(0, 0, 0), width / 2, height / 10, ALLEGRO_ALIGN_CENTRE, "SETTING");
+             al_draw_line(0,  height * 15 / 100, width, height * 15 / 100, al_map_rgb(0, 0, 0),5.0);
+             al_flip_display();
+             while (1) {
 
-            //showBoard(data);
-            movePiecePossiblities(&data, &player);
-            movePiecePossiblitiesJump(&data, &player);
-            movePiecePossiblitiesParties(&data, &player);
-            //putWalls(&data, &player, event_queue, ev);
-            
-            showBoard(data, showPlayer, showPossiblity, Walls);
-            showButton(&save);
-            showButton(&load);
-            al_flip_display();
-            oldDisplay = al_clone_bitmap(al_get_backbuffer(display));
-            
-            while (1) {
-                printf("****\n");
-                al_wait_for_event(event_queue, &event);
+             }
+         }
+         
+         
+         /*if (page == startGame) {
 
-                if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
-                    return 0;
-                }
+             int width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
+             int height = (5 * data.length + 1) * CELLSIZE;
 
-                if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
-                    if (event.mouse.button == 1) {
-
-                        if(checkButton(&save, event.mouse.x, event.mouse.y)){
-                            al_play_sample(audioClick, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-                            FILE *file;
-                            fopen_s(&file,"./Save.dat", "wb");
-                            fwrite(&data, sizeof(data), 1, file);
-                            fwrite(&player, sizeof(player), 1, file);
-                            fclose(file);
-                            continue;
-                        }
-                        if(checkButton(&load, event.mouse.x, event.mouse.y)){
-                            
-                            FILE *file;
-                            fopen_s(&file,"./Save.dat", "rb");
-                            if (!file) continue;
-                            fread(&data, sizeof(data), 1, file);
-                            fread(&player, sizeof(player), 1, file);
-                            al_unregister_event_source(event_queue, al_get_display_event_source(display));
-
-                            al_destroy_display(display);
-                            display = al_create_display((5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE, (5 * data.length + 1) * CELLSIZE);
-                            al_register_event_source(event_queue, al_get_display_event_source(display));
-                            width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
-                            height = (5 * data.length + 1) * CELLSIZE;
-
-                            Button save;
-                            //Button load;
-                            save.posX = width * 80 / 100;
-                            save.posY = height * 10 / 100;
-                            save.width = width * 90 / 100;
-                            save.height = height * 15 / 100;
-                            strcpy_s(save.name, 5, "SAVE");
-
-
-                            Button load;
-                            load.posX = width * 80 / 100;
-                            load.posY = height * 30 / 100;
-                            load.width = width * 90 / 100;
-                            load.height = height * 35 / 100;
-                            strcpy_s(load.name, 5, "LOAD");
-
-                            showBoard(data, showPlayer, showPossiblity, Walls);
-                            showButton(&save);
-                            showButton(&load);
-                            al_flip_display();
-                            oldDisplay = al_clone_bitmap(al_get_backbuffer(display));
-
-                          
-                            al_play_sample(audioClick, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-                            fclose(file);
-                            continue;
-                        }
-
-
-                        
-                        putWalls(&data, &player, event_queue, ev, &go, 4, event.mouse.x, event.mouse.y, 1, &checkingWall, Walls);
-                        if (checkingWall) {
-                            al_play_sample(audioWall, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-                        }
-                        
-                        //printf("%d\n", putWalls(&data, &player, event_queue, ev, &go, 4, event.mouse.x, event.mouse.y, 1));
-                        movePiece(&data, &player, event_queue, ev, event.mouse.x, event.mouse.y, &checkingPiece);
-                       // printf("%d\n", movePiece(&data, &player, event_queue, ev, event.mouse.x, event.mouse.y));
-                        if (checkingPiece) {
-                            al_play_sample(audioPiece, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-                        }
-                        m = m + (checkingPiece + checkingWall);
-                        
-                        showBoard(data, showPlayer, showPossiblity, Walls);
-                        showButton(&save);
-                        showButton(&load);
-                        
-                        al_flip_display();
-                        
-                        break;
-                    }
-                }
-
-                if (event.type == ALLEGRO_EVENT_MOUSE_AXES) {
-                    al_draw_bitmap(oldDisplay, 0, 0, 0);
-                    putWalls(&data, &player, event_queue, ev, &go, 4, event.mouse.x, event.mouse.y, 0, &checkingWall, Walls);
-                    
-                }
-                
-                
-
-            }
-            
-            //movePiece(&data, &player, event_queue, ev);
+             makePrimaryBoard(&data);
+             Button save;
+             save.posX = width * 80 / 100;
+             save.posY = height * 10 / 100;
+             save.width = width * 90 / 100;
+             save.height = height * 15 / 100;
+             strcpy_s(save.name, 5, "SAVE");
 
 
-            //showBoard(data);
-            
+             Button load;
+             load.posX = width * 80 / 100;
+             load.posY = height * 30 / 100;
+             load.width = width * 90 / 100;
+             load.height = height * 35 / 100;
+             strcpy_s(load.name, 5, "LOAD");
 
-
-
-        }
-        al_flip_display();
-        // Wait for a key press before closing the window
-        al_rest(50.0);
-
-        // Destroy the display
-        al_destroy_sample(audioPiece);
-        al_destroy_sample(audioWall);
-        al_destroy_display(display);
-        al_uninstall_audio();
-
-
-        return 0;
-    }
-
-    //------------------------------------------------------------------------------------------------------------------------------------------------
-
-    /*if (Multiplayer == 2) {
-        data.board[0][data.length - data.length % 2] = 1;
-        data.board[data.length * 2 - 2][data.length - data.length % 2] = 2;
-        player.pieceCoordinate[0] = 0;
-        player.pieceCoordinate[1] = data.length - data.length % 2;
-        player.pieceCoordinate[2] = data.length * 2 - 2;
-        player.pieceCoordinate[3] = data.length - data.length % 2;
-        int k = 0;
-
-
-        while (1) {
-            luck(&data, &player, &charm, &present, Multiplayer);
-
-            for (register int i = 0; i < 2 * data.length; i++) {
-                for (int j = 0; j < 2 * data.length; j++) {
-                    if (data.board[i][j] == 6) data.board[i][j] = 5;
-                }
-            }
-            showBoard(data);
-            if (k % 2 == 0) {//player
-                player.term = 1;
-
-                showBoard(data);
-                movePiecePossiblities(&data, &player);
-                movePiecePossiblitiesJump(&data, &player);
-                movePiecePossiblitiesParties(&data, &player);
-
-
-                while (1) {
-                    //showBoard(data);
-                    delete_wall(&data);
-                    showBoard(data);
-                    putWalls(&data, &player, event_queue, ev, &go, 2);
-                    showBoard(data);
-                    al_flip_display();
-
-                    if (go == 1) {
-
-                        break;
-                    }
-                    showBoard(data);
-                }
-                //showBoard(data);
-
-                movePiece(&data, &player, event_queue, ev);
-
-
-                showBoard(data);
-            }
-            else if (k % 2 == 1) {//computer
-                player.term = 2;
-                for (register int i = 0; i < 2 * data.length; i++) {
-                    for (int j = 0; j < 2 * data.length; j++) {
-                        if (data.board[i][j] == 6) data.board[i][j] = 5;
-                    }
-                }
-                //showBoard(data);
-                movePiecePossiblities(&data, &player);
-                movePiecePossiblitiesJump(&data, &player);
-                movePiecePossiblitiesParties(&data, &player);
-                //showBoard(data);
-                //computerPlayer(&data, &player, 2);
-                //delete_wall(&data);
-                srand(time(NULL));
-                int choose = rand() % 2;
-                printf("%d, \n", choose);
-                if (choose == 0) {//move piece
-
-                    computerMove(&data, &player);
-
-                }
-                else if (choose == 1) {// computer wall
-                    computerWall(&data, &player, 2);
-                }
-                //showBoard(data);
-            }
-
-            k++;
-            al_flip_display();
+             showBoard(data, showPlayer, showPossiblity, Walls);
+             showButton(&save);
+             showButton(&load);
+             ALLEGRO_BITMAP* oldDisplay;
+             Multiplayer = 4;
+             if (Multiplayer == 4) {
+                 //printf("%d\n", data.length);
+                 data.board[0][data.length - data.length % 2] = 1;
+                 data.board[data.length * 2 - 2][data.length - data.length % 2] = 2;
+                 data.board[(data.length - data.length % 2)][0] = 3;
+                 data.board[(data.length - data.length % 2)][data.length * 2 - data.length % 2 - 2] = 4;
+                 //player.term = 1;
+                 //if (data.length % 2 == 0) {
+                 player.pieceCoordinate[0] = 0;
+                 player.pieceCoordinate[1] = data.length - data.length % 2;
+                 player.pieceCoordinate[2] = data.length * 2 - 2;
+                 player.pieceCoordinate[3] = data.length - data.length % 2;
+                 player.pieceCoordinate[4] = data.length - data.length % 2;
+                 player.pieceCoordinate[5] = 0;
+                 player.pieceCoordinate[6] = data.length - data.length % 2;
+                 player.pieceCoordinate[7] = data.length * 2 - data.length % 2 - 2;
+                 //}
 
 
 
-        }
-        al_flip_display();
 
-        // Wait for a key press before closing the window
-        al_rest(50.0);
+                 int m = 0;
 
-        // Destroy the display
-        al_destroy_display(display);
 
-        return 0;
-    }*/
+                 while (1) {
+                     checkingWall = 0;
+                     checkingPiece = 0;
+                     //luck(&data, &player, &charm, &present, Multiplayer);
+
+                     if (m % 4 == 0)player.term = 1;
+                     else if (m % 4 == 1) player.term = 2;
+                     else if (m % 4 == 2) player.term = 3;
+                     else if (m % 4 == 3)player.term = 4;
+
+                     //showBoard(data);
+                     movePiecePossiblities(&data, &player);
+                     movePiecePossiblitiesJump(&data, &player);
+                     movePiecePossiblitiesParties(&data, &player);
+                     //putWalls(&data, &player, event_queue, ev);
+
+                     showBoard(data, showPlayer, showPossiblity, Walls);
+                     showButton(&save);
+                     showButton(&load);
+                     al_flip_display();
+                     oldDisplay = al_clone_bitmap(al_get_backbuffer(display));
+
+                     while (1) {
+
+                         al_wait_for_event(event_queue, &event);
+
+                         if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+                             return 0;
+                         }
+
+                         if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
+                             if (event.mouse.button == 1) {
+
+                                 if (checkButton(&save, event.mouse.x, event.mouse.y)) {
+                                     al_play_sample(audioClick, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+                                     FILE* file;
+                                     fopen_s(&file, "./Save.dat", "wb");
+                                     fwrite(&data, sizeof(data), 1, file);
+                                     fwrite(&player, sizeof(player), 1, file);
+                                     fclose(file);
+                                     continue;
+                                 }
+                                 if (checkButton(&load, event.mouse.x, event.mouse.y)) {
+
+                                     FILE* file;
+                                     fopen_s(&file, "./Save.dat", "rb");
+                                     if (!file) continue;
+                                     fread(&data, sizeof(data), 1, file);
+                                     fread(&player, sizeof(player), 1, file);
+                                     al_unregister_event_source(event_queue, al_get_display_event_source(display));
+
+                                     al_destroy_display(display);
+                                     display = al_create_display((5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE, (5 * data.length + 1) * CELLSIZE);
+                                     al_register_event_source(event_queue, al_get_display_event_source(display));
+                                     width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
+                                     height = (5 * data.length + 1) * CELLSIZE;
+
+                                     Button save;
+                                     //Button load;
+                                     save.posX = width * 80 / 100;
+                                     save.posY = height * 10 / 100;
+                                     save.width = width * 90 / 100;
+                                     save.height = height * 15 / 100;
+                                     strcpy_s(save.name, 5, "SAVE");
+
+
+                                     Button load;
+                                     load.posX = width * 80 / 100;
+                                     load.posY = height * 30 / 100;
+                                     load.width = width * 90 / 100;
+                                     load.height = height * 35 / 100;
+                                     strcpy_s(load.name, 5, "LOAD");
+
+                                     showBoard(data, showPlayer, showPossiblity, Walls);
+                                     showButton(&save);
+                                     showButton(&load);
+                                     al_flip_display();
+                                     oldDisplay = al_clone_bitmap(al_get_backbuffer(display));
+
+
+                                     al_play_sample(audioClick, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+                                     fclose(file);
+                                     continue;
+                                 }
+
+
+
+                                 putWalls(&data, &player, event_queue, ev, &go, 4, event.mouse.x, event.mouse.y, 1, &checkingWall, Walls);
+                                 if (checkingWall) {
+                                     al_play_sample(audioWall, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+                                 }
+
+                                 //printf("%d\n", putWalls(&data, &player, event_queue, ev, &go, 4, event.mouse.x, event.mouse.y, 1));
+                                 movePiece(&data, &player, event_queue, ev, event.mouse.x, event.mouse.y, &checkingPiece);
+                                 // printf("%d\n", movePiece(&data, &player, event_queue, ev, event.mouse.x, event.mouse.y));
+                                 if (checkingPiece) {
+                                     al_play_sample(audioPiece, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+                                 }
+                                 m = m + (checkingPiece + checkingWall);
+
+                                 showBoard(data, showPlayer, showPossiblity, Walls);
+                                 showButton(&save);
+                                 showButton(&load);
+
+                                 al_flip_display();
+
+                                 break;
+                             }
+                         }
+
+                         if (event.type == ALLEGRO_EVENT_MOUSE_AXES) {
+                             al_draw_bitmap(oldDisplay, 0, 0, 0);
+                             putWalls(&data, &player, event_queue, ev, &go, 4, event.mouse.x, event.mouse.y, 0, &checkingWall, Walls);
+
+                         }
+
+
+
+                     }
+
+                     //movePiece(&data, &player, event_queue, ev);
+
+
+                     //showBoard(data);
+
+
+
+
+                 }
+                 al_flip_display();
+                 // Wait for a key press before closing the window
+                 al_rest(50.0);
+
+                 // Destroy the display
+                 al_destroy_sample(audioPiece);
+                 al_destroy_sample(audioWall);
+                 al_destroy_display(display);
+                 al_uninstall_audio();
+
+
+                 return 0;
+             }
+
+             //------------------------------------------------------------------------------------------------------------------------------------------------
+
+             /*if (Multiplayer == 2) {
+                 data.board[0][data.length - data.length % 2] = 1;
+                 data.board[data.length * 2 - 2][data.length - data.length % 2] = 2;
+                 player.pieceCoordinate[0] = 0;
+                 player.pieceCoordinate[1] = data.length - data.length % 2;
+                 player.pieceCoordinate[2] = data.length * 2 - 2;
+                 player.pieceCoordinate[3] = data.length - data.length % 2;
+                 int k = 0;
+
+
+                 while (1) {
+                     luck(&data, &player, &charm, &present, Multiplayer);
+
+                     for (register int i = 0; i < 2 * data.length; i++) {
+                         for (int j = 0; j < 2 * data.length; j++) {
+                             if (data.board[i][j] == 6) data.board[i][j] = 5;
+                         }
+                     }
+                     showBoard(data);
+                     if (k % 2 == 0) {//player
+                         player.term = 1;
+
+                         showBoard(data);
+                         movePiecePossiblities(&data, &player);
+                         movePiecePossiblitiesJump(&data, &player);
+                         movePiecePossiblitiesParties(&data, &player);
+
+
+                         while (1) {
+                             //showBoard(data);
+                             delete_wall(&data);
+                             showBoard(data);
+                             putWalls(&data, &player, event_queue, ev, &go, 2);
+                             showBoard(data);
+                             al_flip_display();
+
+                             if (go == 1) {
+
+                                 break;
+                             }
+                             showBoard(data);
+                         }
+                         //showBoard(data);
+
+                         movePiece(&data, &player, event_queue, ev);
+
+
+                         showBoard(data);
+                     }
+                     else if (k % 2 == 1) {//computer
+                         player.term = 2;
+                         for (register int i = 0; i < 2 * data.length; i++) {
+                             for (int j = 0; j < 2 * data.length; j++) {
+                                 if (data.board[i][j] == 6) data.board[i][j] = 5;
+                             }
+                         }
+                         //showBoard(data);
+                         movePiecePossiblities(&data, &player);
+                         movePiecePossiblitiesJump(&data, &player);
+                         movePiecePossiblitiesParties(&data, &player);
+                         //showBoard(data);
+                         //computerPlayer(&data, &player, 2);
+                         //delete_wall(&data);
+                         srand(time(NULL));
+                         int choose = rand() % 2;
+                         printf("%d, \n", choose);
+                         if (choose == 0) {//move piece
+
+                             computerMove(&data, &player);
+
+                         }
+                         else if (choose == 1) {// computer wall
+                             computerWall(&data, &player, 2);
+                         }
+                         //showBoard(data);
+                     }
+
+                     k++;
+                     al_flip_display();
+
+
+
+                 }
+                 al_flip_display();
+
+                 // Wait for a key press before closing the window
+                 al_rest(50.0);
+
+                 // Destroy the display
+                 al_destroy_display(display);
+
+                 return 0;
+             }*/
+             //----------------------------------------$endGame$------------------------------------------------------//
+         //}
+        al_destroy_font(customFont);
+     }
 }

@@ -1268,9 +1268,9 @@ void computerPlayer(struct BOARD* data, struct PLAYER* player, int Multiplayer) 
         computerWall(&data, &player, Multiplayer);
     }
 }
-void showButton(Button* show) {
+void showButton(Button* show, int red, int grean, int blue) {
     
-    al_draw_filled_rectangle(show->posX - 20, show->posY, show->width + 20, show->height, al_map_rgb(161, 127, 136));
+    al_draw_filled_rectangle(show->posX - 20, show->posY, show->width + 20, show->height, al_map_rgb(red, grean, blue));
     al_draw_text(customFont, al_map_rgb(0, 0, 0), (show->posX + show->width) / 2, (show->posY + show->height) / 2, ALLEGRO_ALIGN_CENTER, show->name);
     //al_draw_scaled_bitmap(Saving, 0, 0, al_get_bitmap_width(Saving), al_get_bitmap_height(Saving), show->posX , show->posY , show->width, show->height , 0);
 
@@ -1292,7 +1292,7 @@ int main() {
     struct sidbar menu;
     imgSet icon;
     int Multiplayer;
-    
+
     //printf("enter the length of the board: ");
 
     ///scanf_s("%d", &data.length);
@@ -1341,7 +1341,7 @@ int main() {
         fprintf(stderr, "Error loading font\n");
         return -1;
     }
-    
+
     audioWall = al_load_sample("D:\\Game in VS\\Project1\\Project1\\wall.wav");
     audioPiece = al_load_sample("D:\\Game in VS\\Project1\\Project1\\move.wav");
     audioClick = al_load_sample("D:\\Game in VS\\Project1\\Project1\\click.wav");
@@ -1360,783 +1360,995 @@ int main() {
 
 
 
-    
+
     if (!al_init_acodec_addon()) {
         fprintf(stderr, "Failed to initialize Allegro Acodec.\n");
         return -1;
     }
 
-    
+
     //--------------------------------------$inGame&---------------------------------------------------------------//
-    
+
     //ALLEGRO_DISPLAY* display = al_create_display((5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE, (5 * data.length + 1) * CELLSIZE);
-   
+    int a = 0;
     int Previous = firstMenu;//Previous variable
     int width, height;
-     page = firstMenu;
-     while (page) {
-         
-         if (page == firstMenu) {
-             
-             
-             ALLEGRO_EVENT event;
-             
-             ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
-             ALLEGRO_DISPLAY* display = al_create_display((5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE, (5 * data.length + 1) * CELLSIZE);
-             al_register_event_source(queue, al_get_mouse_event_source());
+    page = firstMenu;
+    while (page && a < 10) {
+        a++;
+        if (page == firstMenu) {
 
-             al_register_event_source(queue, al_get_display_event_source(display));
-             
-             al_reserve_samples(1);
-             al_draw_scaled_bitmap(background, 0, 0, al_get_bitmap_width(background), al_get_bitmap_height(background), 0, 0, (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE, (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE, 0);
-             al_play_sample(audioBackgrond, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-             Button NewGame;
-             width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
-             height = (5 * data.length + 1) * CELLSIZE;
-             NewGame.posX = width * 70 / 100;
-             NewGame.posY = height * 10 / 100;
-             NewGame.width = width * 85 / 100;
-             NewGame.height = height * 20 / 100;
-             strcpy_s(NewGame.name, 9, "NEW GAME");
-             showButton(&NewGame);
-             //al_flip_display();
-             Button LoadGame;
-             width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
-             height = (5 * data.length + 1) * CELLSIZE;
-             LoadGame.posX = width * 70 / 100;
-             LoadGame.posY = height * 25 / 100;
-             LoadGame.width = width * 85 / 100;
-             LoadGame.height = height * 35 / 100;
-             strcpy_s(LoadGame.name, 10, "LOAD GAME");
-             showButton(&LoadGame);
-             //al_flip_display();
-             Button Setting;
-             width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
-             height = (5 * data.length + 1) * CELLSIZE;
-             Setting.posX = width * 70 / 100;
-             Setting.posY = height * 40 / 100;
-             Setting.width = width * 85 / 100;
-             Setting.height = height * 50 / 100;
-             strcpy_s(Setting.name, 10, "SETTING");
-             showButton(&Setting);
-             //al_flip_display();
-             Button exit;
-             width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
-             height = (5 * data.length + 1) * CELLSIZE;
-             exit.posX = width * 70 / 100;
-             exit.posY = height * 55 / 100;
-             exit.width = width * 85 / 100;
-             exit.height = height * 65 / 100;
-             strcpy_s(exit.name, 6, "EXIT");
-             showButton(&exit);
-             al_flip_display();
-             
-             while (1) {
-                 al_wait_for_event(queue, &event);
-                 if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
-                     return 0;
-                 }
-                 if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
-                     if (event.mouse.button == 1) {
-                         if (checkButton(&NewGame, event.mouse.x, event.mouse.y)) {
-                             al_destroy_sample(audioBackgrond);
-                             
-                             //al_play_sample(audioClick, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-                             page = playMenu;
-                             Previous = firstMenu;
-                             //al_flip_display();
-                             break;
 
-                         }
-                         if (checkButton(&LoadGame, event.mouse.x, event.mouse.y)) {
+            ALLEGRO_EVENT event;
+
+            ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
+            ALLEGRO_DISPLAY* display = al_create_display((5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE, (5 * data.length + 1) * CELLSIZE);
+            al_register_event_source(queue, al_get_mouse_event_source());
+
+            al_register_event_source(queue, al_get_display_event_source(display));
+
+            al_reserve_samples(1);
+            al_draw_scaled_bitmap(background, 0, 0, al_get_bitmap_width(background), al_get_bitmap_height(background), 0, 0, (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE, (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE, 0);
+            al_play_sample(audioBackgrond, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+            Button NewGame;
+            width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
+            height = (5 * data.length + 1) * CELLSIZE;
+            NewGame.posX = width * 70 / 100;
+            NewGame.posY = height * 10 / 100;
+            NewGame.width = width * 85 / 100;
+            NewGame.height = height * 20 / 100;
+            strcpy_s(NewGame.name, 9, "NEW GAME");
+            showButton(&NewGame, 161, 127, 136);
+            //al_flip_display();
+            Button LoadGame;
+            width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
+            height = (5 * data.length + 1) * CELLSIZE;
+            LoadGame.posX = width * 70 / 100;
+            LoadGame.posY = height * 25 / 100;
+            LoadGame.width = width * 85 / 100;
+            LoadGame.height = height * 35 / 100;
+            strcpy_s(LoadGame.name, 10, "LOAD GAME");
+            showButton(&LoadGame, 161, 127, 136);
+            //al_flip_display();
+            Button Setting;
+            width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
+            height = (5 * data.length + 1) * CELLSIZE;
+            Setting.posX = width * 70 / 100;
+            Setting.posY = height * 40 / 100;
+            Setting.width = width * 85 / 100;
+            Setting.height = height * 50 / 100;
+            strcpy_s(Setting.name, 10, "SETTING");
+            showButton(&Setting, 161, 127, 136);
+            //al_flip_display();
+            Button exit;
+            width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
+            height = (5 * data.length + 1) * CELLSIZE;
+            exit.posX = width * 70 / 100;
+            exit.posY = height * 55 / 100;
+            exit.width = width * 85 / 100;
+            exit.height = height * 65 / 100;
+            strcpy_s(exit.name, 6, "EXIT");
+            showButton(&exit, 161, 127, 136);
+            al_flip_display();
+
+            while (1) {
+                al_wait_for_event(queue, &event);
+                if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+                    return 0;
+                }
+                if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
+                    if (event.mouse.button == 1) {
+                        if (checkButton(&NewGame, event.mouse.x, event.mouse.y)) {
                             al_destroy_sample(audioBackgrond);
-                             //al_play_sample(audioClick, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-                             page = loadGame;
-                             //al_flip_display();
-                             Previous = firstMenu;
-                             break;
-
-                         }
-                         if (checkButton(&Setting, event.mouse.x, event.mouse.y)) {
-                             al_destroy_sample(audioBackgrond);
-                             //al_play_sample(audioClick, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-                             page = setting;
-                             ////al_flip_display();
-                             Previous = firstMenu;
-                             break;
-
-                         }
-                         if (checkButton(&exit, event.mouse.x, event.mouse.y)) {
-                             al_destroy_sample(audioBackgrond);
-                             
-                             page = endOfGame;
-                             Previous = firstMenu;
-                             //al_flip_display();
-                             break;
-                         }
-                     }
-                 }
-             }
-             //printf("%d", page);
-             al_play_sample(audioClick, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-             al_flip_display();
-             //al_destroy_sample(audioBackgrond);
-             //al_destroy_sample(audioClick);
-             
-             al_destroy_display(display);
-             
-         }
-         if (page == setting) {
-             //printf("%d", page);
-             al_reserve_samples(1);
-             ALLEGRO_DISPLAY* display = al_create_display((5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE, (5 * data.length + 1) * CELLSIZE);
-             ALLEGRO_EVENT event;
-             ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
-             al_register_event_source(queue, al_get_mouse_event_source());
-
-             al_register_event_source(queue, al_get_display_event_source(display));
-             al_reserve_samples(1);
-             al_clear_to_color(al_map_rgb(120, 144, 156));
-             //al_draw_filled_rectangle((5 * data.length + 1)* CELLSIZE, 0, (5 * data.length + 1)* CELLSIZE + 20 * CELLSIZE, (5 * data.length + 1)* CELLSIZE, al_map_rgb(144, 164, 174));
-             width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
-             height = (5 * data.length + 1) * CELLSIZE;
-             al_draw_line(0,  height * 5 / 100, width, height * 5 / 100, al_map_rgb(0, 0, 0),5.0);
-             al_draw_text(customFont, al_map_rgb(0, 0, 0), width / 2, height / 10 - 10, ALLEGRO_ALIGN_CENTRE, "SETTING");
-             al_draw_line(0,  height * 15 / 100, width, height * 15 / 100, al_map_rgb(0, 0, 0),5.0);
-             int Xpiece = width * 5 / 100;
-             int Ypiece = height * 8 / 100;
-             int widthPiece = width * 10 / 100;
-             int heightPiece = height * 15 / 100;
-             al_draw_scaled_bitmap(icon.length, 0, 0, al_get_bitmap_width(icon.length), al_get_bitmap_height(icon.length), Xpiece + 50, Ypiece + 50, widthPiece, heightPiece, 0);
-             //al_draw_text(customFont, al_map_rgb(0, 0, 0), (Xpiece + widthPiece) / 2 + 120, (Ypiece + 50 + heightPiece) / 2 + 20, ALLEGRO_ALIGN_CENTRE, "=");
-             Xpiece = width * 3 / 100;
-             Ypiece = height * 3 / 100;
-             widthPiece = width * 5 / 100;
-             heightPiece = height * 5 / 100;
-             al_draw_scaled_bitmap(icon.Equal, 0, 0, al_get_bitmap_width(icon.Equal), al_get_bitmap_height(icon.Equal), Xpiece + 110 + 50, Ypiece + 120, widthPiece , heightPiece, 0);
-             Button leftArrow1;
-             leftArrow1.posX = ((width * 3) / 100)  + 105 + 90 + 50 ;
-             leftArrow1.posY = ((height * 3) / 100) + 115;
-             leftArrow1.width = ((width * 5) / 100) + leftArrow1.posX;
-             leftArrow1.height = ((height * 5) / 100) + leftArrow1.posY;
-             al_draw_scaled_bitmap(icon.leftFlash1, 0, 0, al_get_bitmap_width(icon.leftFlash1), al_get_bitmap_height(icon.leftFlash1), leftArrow1.posX, leftArrow1.posY, leftArrow1.width - leftArrow1.posX, leftArrow1.height - leftArrow1.posY, 0);
-
-             Button rightArrow1;
-             rightArrow1.posX = width * 3 / 100 + 105 + 90 + 180 + 50 ;
-             rightArrow1.posY = height * 3 / 100 + 115;
-             rightArrow1.width = width * 5 / 100 + rightArrow1.posX;
-             rightArrow1.height = height * 5 / 100 + rightArrow1.posY;
-             
-             al_draw_scaled_bitmap(icon.rightFlash1, 0, 0, al_get_bitmap_width(icon.rightFlash1), al_get_bitmap_height(icon.rightFlash1), rightArrow1.posX, rightArrow1.posY, rightArrow1.width - rightArrow1.posX, rightArrow1.height - rightArrow1.posY, 0);
-             al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow1.posX + leftArrow1.posX) / 2 + 20, (rightArrow1.posY + leftArrow1.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", player.numberWall);
-
-             //-----------------------------------------------------------countWall----------------
-             Xpiece = width * 5 / 100;
-             Ypiece = height * 8 / 100;
-             widthPiece = width * 10 / 100;
-             heightPiece = height * 15 / 100;
-             al_draw_scaled_bitmap(Walls.putWall, 0, 0, al_get_bitmap_width(Walls.putWall), al_get_bitmap_height(Walls.putWall), Xpiece + 50, Ypiece + 50 + 100, widthPiece, heightPiece, 0);
-             //al_draw_text(customFont, al_map_rgb(0, 0, 0), (Xpiece + widthPiece) / 2 + 120, (Ypiece + 50 + heightPiece) / 2 + 20, ALLEGRO_ALIGN_CENTRE, "=");
-             Xpiece = width * 3 / 100;
-             Ypiece = height * 3 / 100;
-             widthPiece = width * 5 / 100;
-             heightPiece = height * 5 / 100;
-             al_draw_scaled_bitmap(icon.Equal, 0, 0, al_get_bitmap_width(icon.Equal), al_get_bitmap_height(icon.Equal), Xpiece + 110 + 50, Ypiece + 120 + 100, widthPiece, heightPiece, 0);
-             Button leftArrow2;
-             leftArrow2.posX = width * 3 / 100 + 105 + 90 + 50;
-             leftArrow2.posY = height * 3 / 100 + 115 + 100;
-             leftArrow2.width = width * 5 / 100 + leftArrow2.posX;
-             leftArrow2.height = height * 5 / 100 + leftArrow2.posY;
-             al_draw_scaled_bitmap(icon.leftFlash2, 0, 0, al_get_bitmap_width(icon.leftFlash2), al_get_bitmap_height(icon.leftFlash2), leftArrow2.posX, leftArrow2.posY, leftArrow2.width - leftArrow2.posX, leftArrow2.height - leftArrow2.posY, 0);
-
-             Button rightArrow2;
-             rightArrow2.posX = width * 3 / 100 + 105 + 90 + 180 + 50;
-             rightArrow2.posY = height * 3 / 100 + 115 + 100;
-             rightArrow2.width = width * 5 / 100 + rightArrow2.posX;
-             rightArrow2.height = height * 5 / 100 + rightArrow2.posY;
-             al_draw_scaled_bitmap(icon.rightFlash2, 0, 0, al_get_bitmap_width(icon.rightFlash2), al_get_bitmap_height(icon.rightFlash2), rightArrow2.posX, rightArrow2.posY, rightArrow2.width - rightArrow2.posX, rightArrow2.height - rightArrow2.posY, 0);
-             al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow2.posX + leftArrow2.posX) / 2 + 20, (rightArrow2.posY + leftArrow2.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", player.numberWall);
-             al_draw_text(fontHelp, al_map_rgb(0, 0, 0), (rightArrow2.posX + leftArrow2.posX) / 2 - 80, (rightArrow2.posY + leftArrow2.posY) / 2 + 80, ALLEGRO_ALIGN_CENTRE, "Number of blocking rounds");
-             al_draw_scaled_bitmap(icon.Equal, 0, 0, al_get_bitmap_width(icon.Equal), al_get_bitmap_height(icon.Equal), (rightArrow2.posX + leftArrow2.posX) / 2 + 120, (rightArrow2.posY + leftArrow2.posY) / 2 + 90, width * 5 / 100, height * 5 / 100, 0);
-             Button leftArrow3;
-             leftArrow3.posX = width * 3 / 100 + 105 + 90 + 50 + 260;
-             leftArrow3.posY = height * 3 / 100 + 115 + 100 + 90;
-             leftArrow3.width = ((width * 5) / 100) + leftArrow3.posX;
-             leftArrow3.height = ((height * 5) / 100) + leftArrow3.posY;
-             al_draw_scaled_bitmap(icon.leftFlash1, 0, 0, al_get_bitmap_width(icon.leftFlash3), al_get_bitmap_height(icon.leftFlash3), leftArrow3.posX, leftArrow3.posY, leftArrow3.width - leftArrow3.posX, leftArrow3.height - leftArrow3.posY, 0);
-
-             Button rightArrow3;
-             rightArrow3.posX = width * 3 / 100 + 105 + 90 + 50 + 260 + 180;
-             rightArrow3.posY = height * 3 / 100 + 115 + 100 + 90;
-             rightArrow3.width = ((width * 5) / 100) + rightArrow3.posX;
-             rightArrow3.height = ((height * 5) / 100) + rightArrow3.posY;
-             al_draw_scaled_bitmap(icon.rightFlash1, 0, 0, al_get_bitmap_width(icon.rightFlash3), al_get_bitmap_height(icon.rightFlash3), rightArrow3.posX, rightArrow3.posY, rightArrow3.width - rightArrow3.posX, rightArrow3.height - rightArrow3.posY, 0);
-             al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow3.posX + leftArrow3.posX) / 2 + 20, (rightArrow3.posY + leftArrow3.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", charm.block);
-
-             al_draw_text(fontHelp, al_map_rgb(0, 0, 0), (rightArrow2.posX + leftArrow2.posX) / 2 - 92, (rightArrow2.posY + leftArrow2.posY) / 2 + 150, ALLEGRO_ALIGN_CENTRE, "Number of deleting walls");
-             al_draw_scaled_bitmap(icon.Equal, 0, 0, al_get_bitmap_width(icon.Equal), al_get_bitmap_height(icon.Equal), (rightArrow2.posX + leftArrow2.posX) / 2 + 110, (rightArrow2.posY + leftArrow2.posY) / 2 + 157, width * 5 / 100, height * 5 / 100, 0);
-
-
-             Button leftArrow4;
-             leftArrow4.posX = width * 3 / 100 + 105 + 90 + 50 + 260;
-             leftArrow4.posY = height * 3 / 100 + 115 + 100 + 90 + 70;
-             leftArrow4.width = ((width * 5) / 100) + leftArrow4.posX;
-             leftArrow4.height = ((height * 5) / 100) + leftArrow4.posY;
-             al_draw_scaled_bitmap(icon.leftFlash4, 0, 0, al_get_bitmap_width(icon.leftFlash4), al_get_bitmap_height(icon.leftFlash4), leftArrow4.posX, leftArrow4.posY, leftArrow4.width - leftArrow4.posX, leftArrow4.height - leftArrow4.posY, 0);
-
-             Button rightArrow4;
-             rightArrow4.posX = width * 3 / 100 + 105 + 90 + 50 + 260 + 180;
-             rightArrow4.posY = height * 3 / 100 + 115 + 100 + 90 + 70;
-             rightArrow4.width = ((width * 5) / 100) + rightArrow4.posX;
-             rightArrow4.height = ((height * 5) / 100) + rightArrow4.posY;
-             al_draw_scaled_bitmap(icon.rightFlash4, 0, 0, al_get_bitmap_width(icon.rightFlash4), al_get_bitmap_height(icon.rightFlash4), rightArrow4.posX, rightArrow4.posY, rightArrow4.width - rightArrow4.posX, rightArrow4.height - rightArrow4.posY, 0);
-             al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow4.posX + leftArrow4.posX) / 2 + 20, (rightArrow4.posY + leftArrow4.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", charm.delet_all_wall);
-
-
-             Button back;
-             width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
-             height = (5 * data.length + 1) * CELLSIZE;
-             back.posX = width * 18 / 100;
-             back.posY = height * 85 / 100;
-             back.width = width * 33 / 100;
-             back.height = height * 95 / 100;
-             strcpy_s(back.name, 5, "BACK");
-             showButton(&back);
-
-             Button reset;
-             width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
-             height = (5 * data.length + 1) * CELLSIZE;
-             reset.posX = width * 43 / 100;
-             reset.posY = height * 85 / 100;
-             reset.width = width * 58 / 100;
-             reset.height = height * 95 / 100;
-             strcpy_s(reset.name, 6, "RESET");
-             showButton(&reset);
-
-             Button apply;
-             width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
-             height = (5 * data.length + 1) * CELLSIZE;
-             apply.posX = width * 68 / 100;
-             apply.posY = height * 85 / 100;
-             apply.width = width * 83 / 100;
-             apply.height = height * 95 / 100;
-             strcpy_s(apply.name, 6, "APPLY");
-             showButton(&apply);
-
-             al_flip_display();
-             while (1) {
-                 al_wait_for_event(queue, &event);
-                 if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
-                     return 0;
-                 }
-                 if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
-                     if (event.mouse.button == 1) {
-                         if (checkButton(&leftArrow1, event.mouse.x, event.mouse.y)) {
-                             if (data.length <= 14 && data.length > 6) {
-                                 data.length -= 1;
-                                 al_draw_filled_rectangle((rightArrow1.posX + leftArrow1.posX) / 2 - 30, (rightArrow1.posY + leftArrow1.posY) / 2 - 10 , (rightArrow1.posX + leftArrow1.posX) / 2 + 50, (rightArrow1.posY + leftArrow1.posY) / 2 + 30, al_map_rgb(120, 144, 156));
-                                 al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow1.posX + leftArrow1.posX) / 2 + 20, (rightArrow1.posY + leftArrow1.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", data.length);
-                                 al_flip_display();
-                             }
-                         }
-                         if (checkButton(&rightArrow1, event.mouse.x, event.mouse.y)) {
-                             if (data.length < 14 && data.length >= 6) {
-                                 data.length += 1;
-                                 al_draw_filled_rectangle((rightArrow1.posX + leftArrow1.posX) / 2 - 30, (rightArrow1.posY + leftArrow1.posY) / 2 - 10, (rightArrow1.posX + leftArrow1.posX) / 2 + 50, (rightArrow1.posY + leftArrow1.posY) / 2 + 30, al_map_rgb(120, 144, 156));
-                                 al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow1.posX + leftArrow1.posX) / 2 + 20, (rightArrow1.posY + leftArrow1.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", data.length);
-                                 al_flip_display();
-                             }
-                         }
-                         if (checkButton(&leftArrow2, event.mouse.x, event.mouse.y)) {
-                             if (player.numberWall <= 14 && player.numberWall > 6) {
-                                 player.numberWall -= 1;
-                                 al_draw_filled_rectangle((rightArrow1.posX + leftArrow1.posX) / 2 - 30 , (rightArrow1.posY + leftArrow1.posY) / 2 + 90, (rightArrow1.posX + leftArrow1.posX) / 2 + 30 + 30, (rightArrow1.posY + leftArrow1.posY) / 2 + 130, al_map_rgb(120, 144, 156));
-                                 al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow2.posX + leftArrow2.posX) / 2 + 20, (rightArrow2.posY + leftArrow2.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", player.numberWall);
-                                 al_flip_display();
-                             }
-                         }
-                         if (checkButton(&rightArrow2, event.mouse.x, event.mouse.y)) {
-                             if (player.numberWall < 14 && player.numberWall >= 6) {
-                                 player.numberWall += 1;
-                                 al_draw_filled_rectangle((rightArrow1.posX + leftArrow1.posX) / 2 - 30, (rightArrow1.posY + leftArrow1.posY) / 2 + 90, (rightArrow1.posX + leftArrow1.posX) / 2 + 30 + 30, (rightArrow1.posY + leftArrow1.posY) / 2 + 130, al_map_rgb(120, 144, 156));
-                                 al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow2.posX + leftArrow2.posX) / 2 + 20, (rightArrow2.posY + leftArrow2.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", player.numberWall);
-                                 al_flip_display();
-                             }
-                         }
-                         if(checkButton(&leftArrow3, event.mouse.x, event.mouse.y)) {
-                             if (charm.block <= 6 && charm.block > 0) {
-                                 charm.block -= 1;
-                                 al_draw_filled_rectangle((rightArrow3.posX + leftArrow3.posX) / 2 - 30 , (rightArrow3.posY + leftArrow3.posY) / 2 - 10, (rightArrow3.posX + leftArrow3.posX) / 2 + 35, (rightArrow3.posY + leftArrow3.posY) / 2 + 30, al_map_rgb(120, 144, 156));
-                                 al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow3.posX + leftArrow3.posX) / 2 + 15, (rightArrow3.posY + leftArrow3.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", charm.block);
-                                 al_flip_display();
-                             }
-                         }
-                         if (checkButton(&rightArrow3, event.mouse.x, event.mouse.y)) {
-                             if (charm.block < 6 && charm.block >= 0) {
-                                 charm.block += 1;
-                                 al_draw_filled_rectangle((rightArrow3.posX + leftArrow3.posX) / 2 - 30, (rightArrow3.posY + leftArrow3.posY) / 2 - 10, (rightArrow3.posX + leftArrow3.posX) / 2 + 35, (rightArrow3.posY + leftArrow3.posY) / 2 + 30, al_map_rgb(120, 144, 156));
-                                 al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow3.posX + leftArrow3.posX) / 2 + 15, (rightArrow3.posY + leftArrow3.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", charm.block);
-                                 al_flip_display();
-                             }
-                         }
-                         if (checkButton(&leftArrow4, event.mouse.x, event.mouse.y)) {
-                             if (charm.delet_all_wall <= 4 && charm.delet_all_wall > 0) {
-                                 charm.delet_all_wall -= 1;
-                                 al_draw_filled_rectangle((rightArrow4.posX + leftArrow4.posX) / 2 - 30, (rightArrow4.posY + leftArrow4.posY) / 2 - 10, (rightArrow4.posX + leftArrow4.posX) / 2 + 35, (rightArrow4.posY + leftArrow4.posY) / 2 + 30, al_map_rgb(120, 144, 156));
-                                 al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow4.posX + leftArrow4.posX) / 2 + 15, (rightArrow4.posY + leftArrow4.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", charm.delet_all_wall);
-                                 al_flip_display();
-                             }
-                         }
-                         if (checkButton(&rightArrow4, event.mouse.x, event.mouse.y)) {
-                             if (charm.delet_all_wall < 4 && charm.delet_all_wall >= 0) {
-                                 charm.delet_all_wall += 1;
-                                 al_draw_filled_rectangle((rightArrow4.posX + leftArrow4.posX) / 2 - 30, (rightArrow4.posY + leftArrow4.posY) / 2 - 10, (rightArrow4.posX + leftArrow4.posX) / 2 + 35, (rightArrow4.posY + leftArrow4.posY) / 2 + 30, al_map_rgb(120, 144, 156));
-                                 al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow4.posX + leftArrow4.posX) / 2 + 15, (rightArrow4.posY + leftArrow4.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", charm.delet_all_wall);
-                                 al_flip_display();
-                             }
-                         }
-                         if (checkButton(&back, event.mouse.x, event.mouse.y)) {
-                             al_play_sample(audioClick, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-
-                             page = Previous;
-                             Previous = setting;
-                             break;
-                         }
-                         if (checkButton(&reset, event.mouse.x, event.mouse.y)) {
-                             al_play_sample(audioClick, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-
-                             data.length = 12;
-                             player.numberWall = 12;
-                             charm.block = 2;
-                             charm.delet_all_wall = 2;
-                             //al_draw_filled_rectangle((5 * data.length + 1)* CELLSIZE, 0, (5 * data.length + 1)* CELLSIZE + 20 * CELLSIZE, (5 * data.length + 1)* CELLSIZE, al_map_rgb(144, 164, 174));
-                             width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
-                             height = (5 * data.length + 1) * CELLSIZE;
-                             al_draw_line(0, height * 5 / 100, width, height * 5 / 100, al_map_rgb(0, 0, 0), 5.0);
-                             al_draw_text(customFont, al_map_rgb(0, 0, 0), width / 2, height / 10 - 10, ALLEGRO_ALIGN_CENTRE, "SETTING");
-                             al_draw_line(0, height * 15 / 100, width, height * 15 / 100, al_map_rgb(0, 0, 0), 5.0);
-                             int Xpiece = width * 5 / 100;
-                             int Ypiece = height * 8 / 100;
-                             int widthPiece = width * 10 / 100;
-                             int heightPiece = height * 15 / 100;
-                             al_draw_scaled_bitmap(icon.length, 0, 0, al_get_bitmap_width(icon.length), al_get_bitmap_height(icon.length), Xpiece + 50, Ypiece + 50, widthPiece, heightPiece, 0);
-                             //al_draw_text(customFont, al_map_rgb(0, 0, 0), (Xpiece + widthPiece) / 2 + 120, (Ypiece + 50 + heightPiece) / 2 + 20, ALLEGRO_ALIGN_CENTRE, "=");
-                             Xpiece = width * 3 / 100;
-                             Ypiece = height * 3 / 100;
-                             widthPiece = width * 5 / 100;
-                             heightPiece = height * 5 / 100;
-                             al_draw_scaled_bitmap(icon.Equal, 0, 0, al_get_bitmap_width(icon.Equal), al_get_bitmap_height(icon.Equal), Xpiece + 110 + 50, Ypiece + 120, widthPiece, heightPiece, 0);
-                             al_draw_filled_rectangle((rightArrow1.posX + leftArrow1.posX) / 2 - 30, (rightArrow1.posY + leftArrow1.posY) / 2 - 10, (rightArrow1.posX + leftArrow1.posX) / 2 + 50, (rightArrow1.posY + leftArrow1.posY) / 2 + 30, al_map_rgb(120, 144, 156));
-
-                             Button leftArrow1;
-                             leftArrow1.posX = ((width * 3) / 100) + 105 + 90 + 50;
-                             leftArrow1.posY = ((height * 3) / 100) + 115;
-                             leftArrow1.width = ((width * 5) / 100) + leftArrow1.posX;
-                             leftArrow1.height = ((height * 5) / 100) + leftArrow1.posY;
-                             al_draw_scaled_bitmap(icon.leftFlash1, 0, 0, al_get_bitmap_width(icon.leftFlash1), al_get_bitmap_height(icon.leftFlash1), leftArrow1.posX, leftArrow1.posY, leftArrow1.width - leftArrow1.posX, leftArrow1.height - leftArrow1.posY, 0);
-                             al_draw_filled_rectangle((rightArrow1.posX + leftArrow1.posX) / 2 - 30, (rightArrow1.posY + leftArrow1.posY) / 2 - 10, (rightArrow1.posX + leftArrow1.posX) / 2 + 50, (rightArrow1.posY + leftArrow1.posY) / 2 + 30, al_map_rgb(120, 144, 156));
-                             al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow1.posX + leftArrow1.posX) / 2 + 20, (rightArrow1.posY + leftArrow1.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", data.length);
-
-                             Button rightArrow1;
-                             rightArrow1.posX = width * 3 / 100 + 105 + 90 + 180 + 50;
-                             rightArrow1.posY = height * 3 / 100 + 115;
-                             rightArrow1.width = width * 5 / 100 + rightArrow1.posX;
-                             rightArrow1.height = height * 5 / 100 + rightArrow1.posY;
-
-                            
-                             al_draw_filled_rectangle((rightArrow1.posX + leftArrow1.posX) / 2 - 30, (rightArrow1.posY + leftArrow1.posY) / 2 - 10, (rightArrow1.posX + leftArrow1.posX) / 2 + 50, (rightArrow1.posY + leftArrow1.posY) / 2 + 30, al_map_rgb(120, 144, 156));
-                             al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow1.posX + leftArrow1.posX) / 2 + 20, (rightArrow1.posY + leftArrow1.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", data.length);
-
-                             //al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow1.posX + leftArrow1.posX) / 2 + 20, (rightArrow1.posY + leftArrow1.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", player.numberWall);
-
-                             //-----------------------------------------------------------countWall----------------
-                             Xpiece = width * 5 / 100;
-                             Ypiece = height * 8 / 100;
-                             widthPiece = width * 10 / 100;
-                             heightPiece = height * 15 / 100;
-                             al_draw_scaled_bitmap(Walls.putWall, 0, 0, al_get_bitmap_width(Walls.putWall), al_get_bitmap_height(Walls.putWall), Xpiece + 50, Ypiece + 50 + 100, widthPiece, heightPiece, 0);
-                             //al_draw_text(customFont, al_map_rgb(0, 0, 0), (Xpiece + widthPiece) / 2 + 120, (Ypiece + 50 + heightPiece) / 2 + 20, ALLEGRO_ALIGN_CENTRE, "=");
-                             Xpiece = width * 3 / 100;
-                             Ypiece = height * 3 / 100;
-                             widthPiece = width * 5 / 100;
-                             heightPiece = height * 5 / 100;
-                             
-                             al_draw_scaled_bitmap(icon.Equal, 0, 0, al_get_bitmap_width(icon.Equal), al_get_bitmap_height(icon.Equal), Xpiece + 110 + 50, Ypiece + 120 + 100, widthPiece, heightPiece, 0);
-                             al_draw_filled_rectangle((rightArrow1.posX + leftArrow1.posX) / 2 - 30, (rightArrow1.posY + leftArrow1.posY) / 2 + 90, (rightArrow1.posX + leftArrow1.posX) / 2 + 30, (rightArrow1.posY + leftArrow1.posY) / 2 + 130, al_map_rgb(120, 144, 156));
-
-                             Button leftArrow2;
-                             leftArrow2.posX = width * 3 / 100 + 105 + 90 + 50;
-                             leftArrow2.posY = height * 3 / 100 + 115 + 100;
-                             leftArrow2.width = width * 5 / 100 + leftArrow2.posX;
-                             leftArrow2.height = height * 5 / 100 + leftArrow2.posY;
-                             al_draw_scaled_bitmap(icon.leftFlash2, 0, 0, al_get_bitmap_width(icon.leftFlash2), al_get_bitmap_height(icon.leftFlash2), leftArrow2.posX, leftArrow2.posY, leftArrow2.width - leftArrow2.posX, leftArrow2.height - leftArrow2.posY, 0);
-                             al_draw_filled_rectangle((rightArrow1.posX + leftArrow1.posX) / 2 - 30, (rightArrow1.posY + leftArrow1.posY) / 2 + 90, (rightArrow1.posX + leftArrow1.posX) / 2 + 30 + 30, (rightArrow1.posY + leftArrow1.posY) / 2 + 130, al_map_rgb(120, 144, 156));
-                             al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow2.posX + leftArrow2.posX) / 2 + 20, (rightArrow2.posY + leftArrow2.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", player.numberWall);
-
-
-                             Button rightArrow2;
-                             rightArrow2.posX = width * 3 / 100 + 105 + 90 + 180 + 50;
-                             rightArrow2.posY = height * 3 / 100 + 115 + 100;
-                             rightArrow2.width = width * 5 / 100 + rightArrow2.posX;
-                             rightArrow2.height = height * 5 / 100 + rightArrow2.posY;
-                             al_draw_scaled_bitmap(icon.rightFlash2, 0, 0, al_get_bitmap_width(icon.rightFlash2), al_get_bitmap_height(icon.rightFlash2), rightArrow2.posX, rightArrow2.posY, rightArrow2.width - rightArrow2.posX, rightArrow2.height - rightArrow2.posY, 0);
-                             al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow2.posX + leftArrow2.posX) / 2, (rightArrow2.posY + leftArrow2.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", player.numberWall);
-                             al_draw_text(fontHelp, al_map_rgb(0, 0, 0), (rightArrow2.posX + leftArrow2.posX) / 2 - 80, (rightArrow2.posY + leftArrow2.posY) / 2 + 80, ALLEGRO_ALIGN_CENTRE, "Number of blocking rounds");
-                             al_draw_scaled_bitmap(icon.Equal, 0, 0, al_get_bitmap_width(icon.Equal), al_get_bitmap_height(icon.Equal), (rightArrow2.posX + leftArrow2.posX) / 2 + 120, (rightArrow2.posY + leftArrow2.posY) / 2 + 90, width * 5 / 100, height * 5 / 100, 0);
-                             al_draw_filled_rectangle((rightArrow1.posX + leftArrow1.posX) / 2 - 30, (rightArrow1.posY + leftArrow1.posY) / 2 + 90, (rightArrow1.posX + leftArrow1.posX) / 2 + 30 + 30, (rightArrow1.posY + leftArrow1.posY) / 2 + 130, al_map_rgb(120, 144, 156));
-
-                             al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow2.posX + leftArrow2.posX) / 2 + 20, (rightArrow2.posY + leftArrow2.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", player.numberWall);
-
-
-                             Button leftArrow3;
-                             leftArrow3.posX = width * 3 / 100 + 105 + 90 + 50 + 260;
-                             leftArrow3.posY = height * 3 / 100 + 115 + 100 + 90;
-                             leftArrow3.width = ((width * 5) / 100) + leftArrow3.posX;
-                             leftArrow3.height = ((height * 5) / 100) + leftArrow3.posY;
-                             al_draw_scaled_bitmap(icon.leftFlash1, 0, 0, al_get_bitmap_width(icon.leftFlash3), al_get_bitmap_height(icon.leftFlash3), leftArrow3.posX, leftArrow3.posY, leftArrow3.width - leftArrow3.posX, leftArrow3.height - leftArrow3.posY, 0);
-
-                             al_draw_filled_rectangle((rightArrow3.posX + leftArrow3.posX) / 2 - 30, (rightArrow3.posY + leftArrow3.posY) / 2 - 10, (rightArrow3.posX + leftArrow3.posX) / 2 + 35, (rightArrow3.posY + leftArrow3.posY) / 2 + 30, al_map_rgb(120, 144, 156));
-
-                             Button rightArrow3;
-                             rightArrow3.posX = width * 3 / 100 + 105 + 90 + 50 + 260 + 180;
-                             rightArrow3.posY = height * 3 / 100 + 115 + 100 + 90;
-                             rightArrow3.width = ((width * 5) / 100) + rightArrow3.posX;
-                             rightArrow3.height = ((height * 5) / 100) + rightArrow3.posY;
-                             al_draw_scaled_bitmap(icon.rightFlash1, 0, 0, al_get_bitmap_width(icon.rightFlash3), al_get_bitmap_height(icon.rightFlash3), rightArrow3.posX, rightArrow3.posY, rightArrow3.width - rightArrow3.posX, rightArrow3.height - rightArrow3.posY, 0);
-                             al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow3.posX + leftArrow3.posX) / 2 + 20, (rightArrow3.posY + leftArrow3.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", charm.block);
-
-                             al_draw_text(fontHelp, al_map_rgb(0, 0, 0), (rightArrow2.posX + leftArrow2.posX) / 2 - 92, (rightArrow2.posY + leftArrow2.posY) / 2 + 150, ALLEGRO_ALIGN_CENTRE, "Number of deleting walls");
-                             al_draw_scaled_bitmap(icon.Equal, 0, 0, al_get_bitmap_width(icon.Equal), al_get_bitmap_height(icon.Equal), (rightArrow2.posX + leftArrow2.posX) / 2 + 110, (rightArrow2.posY + leftArrow2.posY) / 2 + 157, width * 5 / 100, height * 5 / 100, 0);
-
-                             al_draw_filled_rectangle((rightArrow4.posX + leftArrow4.posX) / 2 - 30, (rightArrow4.posY + leftArrow4.posY) / 2 - 10, (rightArrow4.posX + leftArrow4.posX) / 2 + 35, (rightArrow4.posY + leftArrow4.posY) / 2 + 30, al_map_rgb(120, 144, 156));
-
-                            
-                             Button leftArrow4;
-                             leftArrow4.posX = width * 3 / 100 + 105 + 90 + 50 + 260;
-                             leftArrow4.posY = height * 3 / 100 + 115 + 100 + 90 + 70;
-                             leftArrow4.width = ((width * 5) / 100) + leftArrow4.posX;
-                             leftArrow4.height = ((height * 5) / 100) + leftArrow4.posY;
-                             al_draw_scaled_bitmap(icon.leftFlash4, 0, 0, al_get_bitmap_width(icon.leftFlash4), al_get_bitmap_height(icon.leftFlash4), leftArrow4.posX, leftArrow4.posY, leftArrow4.width - leftArrow4.posX, leftArrow4.height - leftArrow4.posY, 0);
-
-                             al_draw_filled_rectangle((rightArrow4.posX + leftArrow4.posX) / 2 - 30, (rightArrow4.posY + leftArrow4.posY) / 2 - 10, (rightArrow4.posX + leftArrow4.posX) / 2 + 35, (rightArrow4.posY + leftArrow4.posY) / 2 + 30, al_map_rgb(120, 144, 156));
-
-
-                             Button rightArrow4;
-                             rightArrow4.posX = width * 3 / 100 + 105 + 90 + 50 + 260 + 180;
-                             rightArrow4.posY = height * 3 / 100 + 115 + 100 + 90 + 70;
-                             rightArrow4.width = ((width * 5) / 100) + rightArrow4.posX;
-                             rightArrow4.height = ((height * 5) / 100) + rightArrow4.posY;
-                             al_draw_scaled_bitmap(icon.rightFlash4, 0, 0, al_get_bitmap_width(icon.rightFlash4), al_get_bitmap_height(icon.rightFlash4), rightArrow4.posX, rightArrow4.posY, rightArrow4.width - rightArrow4.posX, rightArrow4.height - rightArrow4.posY, 0);
-                             al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow4.posX + leftArrow4.posX) / 2 + 20, (rightArrow4.posY + leftArrow4.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", charm.delet_all_wall);
-                             al_flip_display();
-
-                         }
-                         if (checkButton(&apply, event.mouse.x, event.mouse.y)) {
-                             al_play_sample(audioClick, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-
-                             page = playMenu;
-                             Previous = setting;
-                             break;
-                         }
-                     }
-                 }
-
-             }
-             al_flip_display();
-             al_destroy_display(display);
-         }
-         
-         
-         /*if (page == startGame) {
-
-             int width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
-             int height = (5 * data.length + 1) * CELLSIZE;
-
-             makePrimaryBoard(&data);
-             Button save;
-             save.posX = width * 80 / 100;
-             save.posY = height * 10 / 100;
-             save.width = width * 90 / 100;
-             save.height = height * 15 / 100;
-             strcpy_s(save.name, 5, "SAVE");
-
-
-             Button load;
-             load.posX = width * 80 / 100;
-             load.posY = height * 30 / 100;
-             load.width = width * 90 / 100;
-             load.height = height * 35 / 100;
-             strcpy_s(load.name, 5, "LOAD");
-
-             showBoard(data, showPlayer, showPossiblity, Walls);
-             showButton(&save);
-             showButton(&load);
-             ALLEGRO_BITMAP* oldDisplay;
-             Multiplayer = 4;
-             if (Multiplayer == 4) {
-                 //printf("%d\n", data.length);
-                 data.board[0][data.length - data.length % 2] = 1;
-                 data.board[data.length * 2 - 2][data.length - data.length % 2] = 2;
-                 data.board[(data.length - data.length % 2)][0] = 3;
-                 data.board[(data.length - data.length % 2)][data.length * 2 - data.length % 2 - 2] = 4;
-                 //player.term = 1;
-                 //if (data.length % 2 == 0) {
-                 player.pieceCoordinate[0] = 0;
-                 player.pieceCoordinate[1] = data.length - data.length % 2;
-                 player.pieceCoordinate[2] = data.length * 2 - 2;
-                 player.pieceCoordinate[3] = data.length - data.length % 2;
-                 player.pieceCoordinate[4] = data.length - data.length % 2;
-                 player.pieceCoordinate[5] = 0;
-                 player.pieceCoordinate[6] = data.length - data.length % 2;
-                 player.pieceCoordinate[7] = data.length * 2 - data.length % 2 - 2;
-                 //}
-
-
-
-
-                 int m = 0;
-
-
-                 while (1) {
-                     checkingWall = 0;
-                     checkingPiece = 0;
-                     //luck(&data, &player, &charm, &present, Multiplayer);
-
-                     if (m % 4 == 0)player.term = 1;
-                     else if (m % 4 == 1) player.term = 2;
-                     else if (m % 4 == 2) player.term = 3;
-                     else if (m % 4 == 3)player.term = 4;
-
-                     //showBoard(data);
-                     movePiecePossiblities(&data, &player);
-                     movePiecePossiblitiesJump(&data, &player);
-                     movePiecePossiblitiesParties(&data, &player);
-                     //putWalls(&data, &player, event_queue, ev);
-
-                     showBoard(data, showPlayer, showPossiblity, Walls);
-                     showButton(&save);
-                     showButton(&load);
-                     al_flip_display();
-                     oldDisplay = al_clone_bitmap(al_get_backbuffer(display));
-
-                     while (1) {
-
-                         al_wait_for_event(event_queue, &event);
-
-                         if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
-                             return 0;
-                         }
-
-                         if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
-                             if (event.mouse.button == 1) {
-
-                                 if (checkButton(&save, event.mouse.x, event.mouse.y)) {
-                                     al_play_sample(audioClick, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-                                     FILE* file;
-                                     fopen_s(&file, "./Save.dat", "wb");
-                                     fwrite(&data, sizeof(data), 1, file);
-                                     fwrite(&player, sizeof(player), 1, file);
-                                     fclose(file);
-                                     continue;
-                                 }
-                                 if (checkButton(&load, event.mouse.x, event.mouse.y)) {
-
-                                     FILE* file;
-                                     fopen_s(&file, "./Save.dat", "rb");
-                                     if (!file) continue;
-                                     fread(&data, sizeof(data), 1, file);
-                                     fread(&player, sizeof(player), 1, file);
-                                     al_unregister_event_source(event_queue, al_get_display_event_source(display));
-
-                                     al_destroy_display(display);
-                                     display = al_create_display((5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE, (5 * data.length + 1) * CELLSIZE);
-                                     al_register_event_source(event_queue, al_get_display_event_source(display));
-                                     width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
-                                     height = (5 * data.length + 1) * CELLSIZE;
-
-                                     Button save;
-                                     //Button load;
-                                     save.posX = width * 80 / 100;
-                                     save.posY = height * 10 / 100;
-                                     save.width = width * 90 / 100;
-                                     save.height = height * 15 / 100;
-                                     strcpy_s(save.name, 5, "SAVE");
-
-
-                                     Button load;
-                                     load.posX = width * 80 / 100;
-                                     load.posY = height * 30 / 100;
-                                     load.width = width * 90 / 100;
-                                     load.height = height * 35 / 100;
-                                     strcpy_s(load.name, 5, "LOAD");
-
-                                     showBoard(data, showPlayer, showPossiblity, Walls);
-                                     showButton(&save);
-                                     showButton(&load);
-                                     al_flip_display();
-                                     oldDisplay = al_clone_bitmap(al_get_backbuffer(display));
-
-
-                                     al_play_sample(audioClick, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-                                     fclose(file);
-                                     continue;
-                                 }
-
-
-
-                                 putWalls(&data, &player, event_queue, ev, &go, 4, event.mouse.x, event.mouse.y, 1, &checkingWall, Walls);
-                                 if (checkingWall) {
-                                     al_play_sample(audioWall, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-                                 }
-
-                                 //printf("%d\n", putWalls(&data, &player, event_queue, ev, &go, 4, event.mouse.x, event.mouse.y, 1));
-                                 movePiece(&data, &player, event_queue, ev, event.mouse.x, event.mouse.y, &checkingPiece);
-                                 // printf("%d\n", movePiece(&data, &player, event_queue, ev, event.mouse.x, event.mouse.y));
-                                 if (checkingPiece) {
-                                     al_play_sample(audioPiece, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-                                 }
-                                 m = m + (checkingPiece + checkingWall);
-
-                                 showBoard(data, showPlayer, showPossiblity, Walls);
-                                 showButton(&save);
-                                 showButton(&load);
-
-                                 al_flip_display();
-
-                                 break;
-                             }
-                         }
-
-                         if (event.type == ALLEGRO_EVENT_MOUSE_AXES) {
-                             al_draw_bitmap(oldDisplay, 0, 0, 0);
-                             putWalls(&data, &player, event_queue, ev, &go, 4, event.mouse.x, event.mouse.y, 0, &checkingWall, Walls);
-
-                         }
-
-
-
-                     }
-
-                     //movePiece(&data, &player, event_queue, ev);
-
-
-                     //showBoard(data);
-
-
-
-
-                 }
-                 al_flip_display();
-                 // Wait for a key press before closing the window
-                 al_rest(50.0);
-
-                 // Destroy the display
-                 al_destroy_sample(audioPiece);
-                 al_destroy_sample(audioWall);
-                 al_destroy_display(display);
-                 al_uninstall_audio();
-
-
-                 return 0;
-             }
-
-             //------------------------------------------------------------------------------------------------------------------------------------------------
-
-             /*if (Multiplayer == 2) {
-                 data.board[0][data.length - data.length % 2] = 1;
-                 data.board[data.length * 2 - 2][data.length - data.length % 2] = 2;
-                 player.pieceCoordinate[0] = 0;
-                 player.pieceCoordinate[1] = data.length - data.length % 2;
-                 player.pieceCoordinate[2] = data.length * 2 - 2;
-                 player.pieceCoordinate[3] = data.length - data.length % 2;
-                 int k = 0;
-
-
-                 while (1) {
-                     luck(&data, &player, &charm, &present, Multiplayer);
-
-                     for (register int i = 0; i < 2 * data.length; i++) {
-                         for (int j = 0; j < 2 * data.length; j++) {
-                             if (data.board[i][j] == 6) data.board[i][j] = 5;
-                         }
-                     }
-                     showBoard(data);
-                     if (k % 2 == 0) {//player
-                         player.term = 1;
-
-                         showBoard(data);
-                         movePiecePossiblities(&data, &player);
-                         movePiecePossiblitiesJump(&data, &player);
-                         movePiecePossiblitiesParties(&data, &player);
-
-
-                         while (1) {
-                             //showBoard(data);
-                             delete_wall(&data);
-                             showBoard(data);
-                             putWalls(&data, &player, event_queue, ev, &go, 2);
-                             showBoard(data);
-                             al_flip_display();
-
-                             if (go == 1) {
-
-                                 break;
-                             }
-                             showBoard(data);
-                         }
-                         //showBoard(data);
-
-                         movePiece(&data, &player, event_queue, ev);
-
-
-                         showBoard(data);
-                     }
-                     else if (k % 2 == 1) {//computer
-                         player.term = 2;
-                         for (register int i = 0; i < 2 * data.length; i++) {
-                             for (int j = 0; j < 2 * data.length; j++) {
-                                 if (data.board[i][j] == 6) data.board[i][j] = 5;
-                             }
-                         }
-                         //showBoard(data);
-                         movePiecePossiblities(&data, &player);
-                         movePiecePossiblitiesJump(&data, &player);
-                         movePiecePossiblitiesParties(&data, &player);
-                         //showBoard(data);
-                         //computerPlayer(&data, &player, 2);
-                         //delete_wall(&data);
-                         srand(time(NULL));
-                         int choose = rand() % 2;
-                         printf("%d, \n", choose);
-                         if (choose == 0) {//move piece
-
-                             computerMove(&data, &player);
-
-                         }
-                         else if (choose == 1) {// computer wall
-                             computerWall(&data, &player, 2);
-                         }
-                         //showBoard(data);
-                     }
-
-                     k++;
-                     al_flip_display();
-
-
-
-                 }
-                 al_flip_display();
-
-                 // Wait for a key press before closing the window
-                 al_rest(50.0);
-
-                 // Destroy the display
-                 al_destroy_display(display);
-
-                 return 0;
-             }*/
-             //----------------------------------------$endGame$------------------------------------------------------//
-         //}
-        al_destroy_font(customFont);
-     }
-}
+
+                            //al_play_sample(audioClick, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+                            page = playMenu;
+                            Previous = firstMenu;
+                            //al_flip_display();
+                            break;
+
+                        }
+                        if (checkButton(&LoadGame, event.mouse.x, event.mouse.y)) {
+                            al_destroy_sample(audioBackgrond);
+                            //al_play_sample(audioClick, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+                            page = loadGame;
+                            //al_flip_display();
+                            Previous = firstMenu;
+                            break;
+
+                        }
+                        if (checkButton(&Setting, event.mouse.x, event.mouse.y)) {
+                            al_destroy_sample(audioBackgrond);
+                            //al_play_sample(audioClick, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+                            page = setting;
+                            ////al_flip_display();
+                            Previous = firstMenu;
+                            break;
+
+                        }
+                        if (checkButton(&exit, event.mouse.x, event.mouse.y)) {
+                            al_destroy_sample(audioBackgrond);
+
+                            page = endOfGame;
+                            Previous = firstMenu;
+                            //al_flip_display();
+                            break;
+                        }
+                    }
+                }
+            }
+            //printf("%d", page);
+            al_play_sample(audioClick, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+            al_flip_display();
+            //al_destroy_sample(audioBackgrond);
+            //al_destroy_sample(audioClick);
+
+            al_destroy_display(display);
+
+        }
+        if (page == setting) {
+            //printf("%d", page);
+            al_reserve_samples(1);
+            ALLEGRO_DISPLAY* display = al_create_display((5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE, (5 * data.length + 1) * CELLSIZE);
+            ALLEGRO_EVENT event;
+            ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
+            al_register_event_source(queue, al_get_mouse_event_source());
+
+            al_register_event_source(queue, al_get_display_event_source(display));
+            al_reserve_samples(1);
+            al_clear_to_color(al_map_rgb(120, 144, 156));
+            //al_draw_filled_rectangle((5 * data.length + 1)* CELLSIZE, 0, (5 * data.length + 1)* CELLSIZE + 20 * CELLSIZE, (5 * data.length + 1)* CELLSIZE, al_map_rgb(144, 164, 174));
+            width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
+            height = (5 * data.length + 1) * CELLSIZE;
+            al_draw_line(0, height * 5 / 100, width, height * 5 / 100, al_map_rgb(0, 0, 0), 5.0);
+            al_draw_text(customFont, al_map_rgb(0, 0, 0), width / 2, height / 10 - 10, ALLEGRO_ALIGN_CENTRE, "SETTING");
+            al_draw_line(0, height * 15 / 100, width, height * 15 / 100, al_map_rgb(0, 0, 0), 5.0);
+            int Xpiece = width * 5 / 100;
+            int Ypiece = height * 8 / 100;
+            int widthPiece = width * 10 / 100;
+            int heightPiece = height * 15 / 100;
+            al_draw_scaled_bitmap(icon.length, 0, 0, al_get_bitmap_width(icon.length), al_get_bitmap_height(icon.length), Xpiece + 50, Ypiece + 50, widthPiece, heightPiece, 0);
+            //al_draw_text(customFont, al_map_rgb(0, 0, 0), (Xpiece + widthPiece) / 2 + 120, (Ypiece + 50 + heightPiece) / 2 + 20, ALLEGRO_ALIGN_CENTRE, "=");
+            Xpiece = width * 3 / 100;
+            Ypiece = height * 3 / 100;
+            widthPiece = width * 5 / 100;
+            heightPiece = height * 5 / 100;
+            al_draw_scaled_bitmap(icon.Equal, 0, 0, al_get_bitmap_width(icon.Equal), al_get_bitmap_height(icon.Equal), Xpiece + 110 + 50, Ypiece + 120, widthPiece, heightPiece, 0);
+            Button leftArrow1;
+            leftArrow1.posX = ((width * 3) / 100) + 105 + 90 + 50;
+            leftArrow1.posY = ((height * 3) / 100) + 115;
+            leftArrow1.width = ((width * 5) / 100) + leftArrow1.posX;
+            leftArrow1.height = ((height * 5) / 100) + leftArrow1.posY;
+            al_draw_scaled_bitmap(icon.leftFlash1, 0, 0, al_get_bitmap_width(icon.leftFlash1), al_get_bitmap_height(icon.leftFlash1), leftArrow1.posX, leftArrow1.posY, leftArrow1.width - leftArrow1.posX, leftArrow1.height - leftArrow1.posY, 0);
+
+            Button rightArrow1;
+            rightArrow1.posX = width * 3 / 100 + 105 + 90 + 180 + 50;
+            rightArrow1.posY = height * 3 / 100 + 115;
+            rightArrow1.width = width * 5 / 100 + rightArrow1.posX;
+            rightArrow1.height = height * 5 / 100 + rightArrow1.posY;
+
+            al_draw_scaled_bitmap(icon.rightFlash1, 0, 0, al_get_bitmap_width(icon.rightFlash1), al_get_bitmap_height(icon.rightFlash1), rightArrow1.posX, rightArrow1.posY, rightArrow1.width - rightArrow1.posX, rightArrow1.height - rightArrow1.posY, 0);
+            al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow1.posX + leftArrow1.posX) / 2 + 20, (rightArrow1.posY + leftArrow1.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", player.numberWall);
+
+            //-----------------------------------------------------------countWall----------------
+            Xpiece = width * 5 / 100;
+            Ypiece = height * 8 / 100;
+            widthPiece = width * 10 / 100;
+            heightPiece = height * 15 / 100;
+            al_draw_scaled_bitmap(Walls.putWall, 0, 0, al_get_bitmap_width(Walls.putWall), al_get_bitmap_height(Walls.putWall), Xpiece + 50, Ypiece + 50 + 100, widthPiece, heightPiece, 0);
+            //al_draw_text(customFont, al_map_rgb(0, 0, 0), (Xpiece + widthPiece) / 2 + 120, (Ypiece + 50 + heightPiece) / 2 + 20, ALLEGRO_ALIGN_CENTRE, "=");
+            Xpiece = width * 3 / 100;
+            Ypiece = height * 3 / 100;
+            widthPiece = width * 5 / 100;
+            heightPiece = height * 5 / 100;
+            al_draw_scaled_bitmap(icon.Equal, 0, 0, al_get_bitmap_width(icon.Equal), al_get_bitmap_height(icon.Equal), Xpiece + 110 + 50, Ypiece + 120 + 100, widthPiece, heightPiece, 0);
+            Button leftArrow2;
+            leftArrow2.posX = width * 3 / 100 + 105 + 90 + 50;
+            leftArrow2.posY = height * 3 / 100 + 115 + 100;
+            leftArrow2.width = width * 5 / 100 + leftArrow2.posX;
+            leftArrow2.height = height * 5 / 100 + leftArrow2.posY;
+            al_draw_scaled_bitmap(icon.leftFlash2, 0, 0, al_get_bitmap_width(icon.leftFlash2), al_get_bitmap_height(icon.leftFlash2), leftArrow2.posX, leftArrow2.posY, leftArrow2.width - leftArrow2.posX, leftArrow2.height - leftArrow2.posY, 0);
+
+            Button rightArrow2;
+            rightArrow2.posX = width * 3 / 100 + 105 + 90 + 180 + 50;
+            rightArrow2.posY = height * 3 / 100 + 115 + 100;
+            rightArrow2.width = width * 5 / 100 + rightArrow2.posX;
+            rightArrow2.height = height * 5 / 100 + rightArrow2.posY;
+            al_draw_scaled_bitmap(icon.rightFlash2, 0, 0, al_get_bitmap_width(icon.rightFlash2), al_get_bitmap_height(icon.rightFlash2), rightArrow2.posX, rightArrow2.posY, rightArrow2.width - rightArrow2.posX, rightArrow2.height - rightArrow2.posY, 0);
+            al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow2.posX + leftArrow2.posX) / 2 + 20, (rightArrow2.posY + leftArrow2.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", player.numberWall);
+            al_draw_text(fontHelp, al_map_rgb(0, 0, 0), (rightArrow2.posX + leftArrow2.posX) / 2 - 80, (rightArrow2.posY + leftArrow2.posY) / 2 + 80, ALLEGRO_ALIGN_CENTRE, "Number of blocking rounds");
+            al_draw_scaled_bitmap(icon.Equal, 0, 0, al_get_bitmap_width(icon.Equal), al_get_bitmap_height(icon.Equal), (rightArrow2.posX + leftArrow2.posX) / 2 + 120, (rightArrow2.posY + leftArrow2.posY) / 2 + 90, width * 5 / 100, height * 5 / 100, 0);
+            Button leftArrow3;
+            leftArrow3.posX = width * 3 / 100 + 105 + 90 + 50 + 260;
+            leftArrow3.posY = height * 3 / 100 + 115 + 100 + 90;
+            leftArrow3.width = ((width * 5) / 100) + leftArrow3.posX;
+            leftArrow3.height = ((height * 5) / 100) + leftArrow3.posY;
+            al_draw_scaled_bitmap(icon.leftFlash1, 0, 0, al_get_bitmap_width(icon.leftFlash3), al_get_bitmap_height(icon.leftFlash3), leftArrow3.posX, leftArrow3.posY, leftArrow3.width - leftArrow3.posX, leftArrow3.height - leftArrow3.posY, 0);
+
+            Button rightArrow3;
+            rightArrow3.posX = width * 3 / 100 + 105 + 90 + 50 + 260 + 180;
+            rightArrow3.posY = height * 3 / 100 + 115 + 100 + 90;
+            rightArrow3.width = ((width * 5) / 100) + rightArrow3.posX;
+            rightArrow3.height = ((height * 5) / 100) + rightArrow3.posY;
+            al_draw_scaled_bitmap(icon.rightFlash1, 0, 0, al_get_bitmap_width(icon.rightFlash3), al_get_bitmap_height(icon.rightFlash3), rightArrow3.posX, rightArrow3.posY, rightArrow3.width - rightArrow3.posX, rightArrow3.height - rightArrow3.posY, 0);
+            al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow3.posX + leftArrow3.posX) / 2 + 20, (rightArrow3.posY + leftArrow3.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", charm.block);
+
+            al_draw_text(fontHelp, al_map_rgb(0, 0, 0), (rightArrow2.posX + leftArrow2.posX) / 2 - 92, (rightArrow2.posY + leftArrow2.posY) / 2 + 150, ALLEGRO_ALIGN_CENTRE, "Number of deleting walls");
+            al_draw_scaled_bitmap(icon.Equal, 0, 0, al_get_bitmap_width(icon.Equal), al_get_bitmap_height(icon.Equal), (rightArrow2.posX + leftArrow2.posX) / 2 + 110, (rightArrow2.posY + leftArrow2.posY) / 2 + 157, width * 5 / 100, height * 5 / 100, 0);
+
+
+            Button leftArrow4;
+            leftArrow4.posX = width * 3 / 100 + 105 + 90 + 50 + 260;
+            leftArrow4.posY = height * 3 / 100 + 115 + 100 + 90 + 70;
+            leftArrow4.width = ((width * 5) / 100) + leftArrow4.posX;
+            leftArrow4.height = ((height * 5) / 100) + leftArrow4.posY;
+            al_draw_scaled_bitmap(icon.leftFlash4, 0, 0, al_get_bitmap_width(icon.leftFlash4), al_get_bitmap_height(icon.leftFlash4), leftArrow4.posX, leftArrow4.posY, leftArrow4.width - leftArrow4.posX, leftArrow4.height - leftArrow4.posY, 0);
+
+            Button rightArrow4;
+            rightArrow4.posX = width * 3 / 100 + 105 + 90 + 50 + 260 + 180;
+            rightArrow4.posY = height * 3 / 100 + 115 + 100 + 90 + 70;
+            rightArrow4.width = ((width * 5) / 100) + rightArrow4.posX;
+            rightArrow4.height = ((height * 5) / 100) + rightArrow4.posY;
+            al_draw_scaled_bitmap(icon.rightFlash4, 0, 0, al_get_bitmap_width(icon.rightFlash4), al_get_bitmap_height(icon.rightFlash4), rightArrow4.posX, rightArrow4.posY, rightArrow4.width - rightArrow4.posX, rightArrow4.height - rightArrow4.posY, 0);
+            al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow4.posX + leftArrow4.posX) / 2 + 20, (rightArrow4.posY + leftArrow4.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", charm.delet_all_wall);
+
+
+            Button back;
+            width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
+            height = (5 * data.length + 1) * CELLSIZE;
+            back.posX = width * 18 / 100;
+            back.posY = height * 85 / 100;
+            back.width = width * 33 / 100;
+            back.height = height * 95 / 100;
+            strcpy_s(back.name, 5, "BACK");
+            showButton(&back, 0, 105, 92);
+
+            Button reset;
+            width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
+            height = (5 * data.length + 1) * CELLSIZE;
+            reset.posX = width * 43 / 100;
+            reset.posY = height * 85 / 100;
+            reset.width = width * 58 / 100;
+            reset.height = height * 95 / 100;
+            strcpy_s(reset.name, 6, "RESET");
+            showButton(&reset, 0, 105, 92);
+
+            Button apply;
+            width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
+            height = (5 * data.length + 1) * CELLSIZE;
+            apply.posX = width * 68 / 100;
+            apply.posY = height * 85 / 100;
+            apply.width = width * 83 / 100;
+            apply.height = height * 95 / 100;
+            strcpy_s(apply.name, 6, "APPLY");
+            showButton(&apply, 0, 105, 92);
+
+            al_flip_display();
+            while (1) {
+                al_wait_for_event(queue, &event);
+                if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+                    return 0;
+                }
+                if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
+                    if (event.mouse.button == 1) {
+                        if (checkButton(&leftArrow1, event.mouse.x, event.mouse.y)) {
+                            if (data.length <= 14 && data.length > 6) {
+                                data.length -= 1;
+                                al_draw_filled_rectangle((rightArrow1.posX + leftArrow1.posX) / 2 - 30, (rightArrow1.posY + leftArrow1.posY) / 2 - 10, (rightArrow1.posX + leftArrow1.posX) / 2 + 50, (rightArrow1.posY + leftArrow1.posY) / 2 + 30, al_map_rgb(120, 144, 156));
+                                al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow1.posX + leftArrow1.posX) / 2 + 20, (rightArrow1.posY + leftArrow1.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", data.length);
+                                al_flip_display();
+                            }
+                        }
+                        if (checkButton(&rightArrow1, event.mouse.x, event.mouse.y)) {
+                            if (data.length < 14 && data.length >= 6) {
+                                data.length += 1;
+                                al_draw_filled_rectangle((rightArrow1.posX + leftArrow1.posX) / 2 - 30, (rightArrow1.posY + leftArrow1.posY) / 2 - 10, (rightArrow1.posX + leftArrow1.posX) / 2 + 50, (rightArrow1.posY + leftArrow1.posY) / 2 + 30, al_map_rgb(120, 144, 156));
+                                al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow1.posX + leftArrow1.posX) / 2 + 20, (rightArrow1.posY + leftArrow1.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", data.length);
+                                al_flip_display();
+                            }
+                        }
+                        if (checkButton(&leftArrow2, event.mouse.x, event.mouse.y)) {
+                            if (player.numberWall <= 14 && player.numberWall > 6) {
+                                player.numberWall -= 1;
+                                al_draw_filled_rectangle((rightArrow1.posX + leftArrow1.posX) / 2 - 30, (rightArrow1.posY + leftArrow1.posY) / 2 + 90, (rightArrow1.posX + leftArrow1.posX) / 2 + 30 + 30, (rightArrow1.posY + leftArrow1.posY) / 2 + 130, al_map_rgb(120, 144, 156));
+                                al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow2.posX + leftArrow2.posX) / 2 + 20, (rightArrow2.posY + leftArrow2.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", player.numberWall);
+                                al_flip_display();
+                            }
+                        }
+                        if (checkButton(&rightArrow2, event.mouse.x, event.mouse.y)) {
+                            if (player.numberWall < 14 && player.numberWall >= 6) {
+                                player.numberWall += 1;
+                                al_draw_filled_rectangle((rightArrow1.posX + leftArrow1.posX) / 2 - 30, (rightArrow1.posY + leftArrow1.posY) / 2 + 90, (rightArrow1.posX + leftArrow1.posX) / 2 + 30 + 30, (rightArrow1.posY + leftArrow1.posY) / 2 + 130, al_map_rgb(120, 144, 156));
+                                al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow2.posX + leftArrow2.posX) / 2 + 20, (rightArrow2.posY + leftArrow2.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", player.numberWall);
+                                al_flip_display();
+                            }
+                        }
+                        if (checkButton(&leftArrow3, event.mouse.x, event.mouse.y)) {
+                            if (charm.block <= 6 && charm.block > 0) {
+                                charm.block -= 1;
+                                al_draw_filled_rectangle((rightArrow3.posX + leftArrow3.posX) / 2 - 30, (rightArrow3.posY + leftArrow3.posY) / 2 - 10, (rightArrow3.posX + leftArrow3.posX) / 2 + 35, (rightArrow3.posY + leftArrow3.posY) / 2 + 30, al_map_rgb(120, 144, 156));
+                                al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow3.posX + leftArrow3.posX) / 2 + 15, (rightArrow3.posY + leftArrow3.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", charm.block);
+                                al_flip_display();
+                            }
+                        }
+                        if (checkButton(&rightArrow3, event.mouse.x, event.mouse.y)) {
+                            if (charm.block < 6 && charm.block >= 0) {
+                                charm.block += 1;
+                                al_draw_filled_rectangle((rightArrow3.posX + leftArrow3.posX) / 2 - 30, (rightArrow3.posY + leftArrow3.posY) / 2 - 10, (rightArrow3.posX + leftArrow3.posX) / 2 + 35, (rightArrow3.posY + leftArrow3.posY) / 2 + 30, al_map_rgb(120, 144, 156));
+                                al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow3.posX + leftArrow3.posX) / 2 + 15, (rightArrow3.posY + leftArrow3.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", charm.block);
+                                al_flip_display();
+                            }
+                        }
+                        if (checkButton(&leftArrow4, event.mouse.x, event.mouse.y)) {
+                            if (charm.delet_all_wall <= 4 && charm.delet_all_wall > 0) {
+                                charm.delet_all_wall -= 1;
+                                al_draw_filled_rectangle((rightArrow4.posX + leftArrow4.posX) / 2 - 30, (rightArrow4.posY + leftArrow4.posY) / 2 - 10, (rightArrow4.posX + leftArrow4.posX) / 2 + 35, (rightArrow4.posY + leftArrow4.posY) / 2 + 30, al_map_rgb(120, 144, 156));
+                                al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow4.posX + leftArrow4.posX) / 2 + 15, (rightArrow4.posY + leftArrow4.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", charm.delet_all_wall);
+                                al_flip_display();
+                            }
+                        }
+                        if (checkButton(&rightArrow4, event.mouse.x, event.mouse.y)) {
+                            if (charm.delet_all_wall < 4 && charm.delet_all_wall >= 0) {
+                                charm.delet_all_wall += 1;
+                                al_draw_filled_rectangle((rightArrow4.posX + leftArrow4.posX) / 2 - 30, (rightArrow4.posY + leftArrow4.posY) / 2 - 10, (rightArrow4.posX + leftArrow4.posX) / 2 + 35, (rightArrow4.posY + leftArrow4.posY) / 2 + 30, al_map_rgb(120, 144, 156));
+                                al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow4.posX + leftArrow4.posX) / 2 + 15, (rightArrow4.posY + leftArrow4.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", charm.delet_all_wall);
+                                al_flip_display();
+                            }
+                        }
+                        if (checkButton(&back, event.mouse.x, event.mouse.y)) {
+                            al_play_sample(audioClick, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+
+                            page = Previous;
+                            Previous = setting;
+                            break;
+                        }
+                        if (checkButton(&reset, event.mouse.x, event.mouse.y)) {
+                            al_play_sample(audioClick, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+
+                            data.length = 12;
+                            player.numberWall = 12;
+                            charm.block = 2;
+                            charm.delet_all_wall = 2;
+                            //al_draw_filled_rectangle((5 * data.length + 1)* CELLSIZE, 0, (5 * data.length + 1)* CELLSIZE + 20 * CELLSIZE, (5 * data.length + 1)* CELLSIZE, al_map_rgb(144, 164, 174));
+                            width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
+                            height = (5 * data.length + 1) * CELLSIZE;
+                            al_draw_line(0, height * 5 / 100, width, height * 5 / 100, al_map_rgb(0, 0, 0), 5.0);
+                            al_draw_text(customFont, al_map_rgb(0, 0, 0), width / 2, height / 10 - 10, ALLEGRO_ALIGN_CENTRE, "SETTING");
+                            al_draw_line(0, height * 15 / 100, width, height * 15 / 100, al_map_rgb(0, 0, 0), 5.0);
+                            int Xpiece = width * 5 / 100;
+                            int Ypiece = height * 8 / 100;
+                            int widthPiece = width * 10 / 100;
+                            int heightPiece = height * 15 / 100;
+                            al_draw_scaled_bitmap(icon.length, 0, 0, al_get_bitmap_width(icon.length), al_get_bitmap_height(icon.length), Xpiece + 50, Ypiece + 50, widthPiece, heightPiece, 0);
+                            //al_draw_text(customFont, al_map_rgb(0, 0, 0), (Xpiece + widthPiece) / 2 + 120, (Ypiece + 50 + heightPiece) / 2 + 20, ALLEGRO_ALIGN_CENTRE, "=");
+                            Xpiece = width * 3 / 100;
+                            Ypiece = height * 3 / 100;
+                            widthPiece = width * 5 / 100;
+                            heightPiece = height * 5 / 100;
+                            al_draw_scaled_bitmap(icon.Equal, 0, 0, al_get_bitmap_width(icon.Equal), al_get_bitmap_height(icon.Equal), Xpiece + 110 + 50, Ypiece + 120, widthPiece, heightPiece, 0);
+                            al_draw_filled_rectangle((rightArrow1.posX + leftArrow1.posX) / 2 - 30, (rightArrow1.posY + leftArrow1.posY) / 2 - 10, (rightArrow1.posX + leftArrow1.posX) / 2 + 50, (rightArrow1.posY + leftArrow1.posY) / 2 + 30, al_map_rgb(120, 144, 156));
+
+                            Button leftArrow1;
+                            leftArrow1.posX = ((width * 3) / 100) + 105 + 90 + 50;
+                            leftArrow1.posY = ((height * 3) / 100) + 115;
+                            leftArrow1.width = ((width * 5) / 100) + leftArrow1.posX;
+                            leftArrow1.height = ((height * 5) / 100) + leftArrow1.posY;
+                            al_draw_scaled_bitmap(icon.leftFlash1, 0, 0, al_get_bitmap_width(icon.leftFlash1), al_get_bitmap_height(icon.leftFlash1), leftArrow1.posX, leftArrow1.posY, leftArrow1.width - leftArrow1.posX, leftArrow1.height - leftArrow1.posY, 0);
+                            al_draw_filled_rectangle((rightArrow1.posX + leftArrow1.posX) / 2 - 30, (rightArrow1.posY + leftArrow1.posY) / 2 - 10, (rightArrow1.posX + leftArrow1.posX) / 2 + 50, (rightArrow1.posY + leftArrow1.posY) / 2 + 30, al_map_rgb(120, 144, 156));
+                            al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow1.posX + leftArrow1.posX) / 2 + 20, (rightArrow1.posY + leftArrow1.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", data.length);
+
+                            Button rightArrow1;
+                            rightArrow1.posX = width * 3 / 100 + 105 + 90 + 180 + 50;
+                            rightArrow1.posY = height * 3 / 100 + 115;
+                            rightArrow1.width = width * 5 / 100 + rightArrow1.posX;
+                            rightArrow1.height = height * 5 / 100 + rightArrow1.posY;
+
+
+                            al_draw_filled_rectangle((rightArrow1.posX + leftArrow1.posX) / 2 - 30, (rightArrow1.posY + leftArrow1.posY) / 2 - 10, (rightArrow1.posX + leftArrow1.posX) / 2 + 50, (rightArrow1.posY + leftArrow1.posY) / 2 + 30, al_map_rgb(120, 144, 156));
+                            al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow1.posX + leftArrow1.posX) / 2 + 20, (rightArrow1.posY + leftArrow1.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", data.length);
+
+                            //al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow1.posX + leftArrow1.posX) / 2 + 20, (rightArrow1.posY + leftArrow1.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", player.numberWall);
+
+                            //-----------------------------------------------------------countWall----------------
+                            Xpiece = width * 5 / 100;
+                            Ypiece = height * 8 / 100;
+                            widthPiece = width * 10 / 100;
+                            heightPiece = height * 15 / 100;
+                            al_draw_scaled_bitmap(Walls.putWall, 0, 0, al_get_bitmap_width(Walls.putWall), al_get_bitmap_height(Walls.putWall), Xpiece + 50, Ypiece + 50 + 100, widthPiece, heightPiece, 0);
+                            //al_draw_text(customFont, al_map_rgb(0, 0, 0), (Xpiece + widthPiece) / 2 + 120, (Ypiece + 50 + heightPiece) / 2 + 20, ALLEGRO_ALIGN_CENTRE, "=");
+                            Xpiece = width * 3 / 100;
+                            Ypiece = height * 3 / 100;
+                            widthPiece = width * 5 / 100;
+                            heightPiece = height * 5 / 100;
+
+                            al_draw_scaled_bitmap(icon.Equal, 0, 0, al_get_bitmap_width(icon.Equal), al_get_bitmap_height(icon.Equal), Xpiece + 110 + 50, Ypiece + 120 + 100, widthPiece, heightPiece, 0);
+                            al_draw_filled_rectangle((rightArrow1.posX + leftArrow1.posX) / 2 - 30, (rightArrow1.posY + leftArrow1.posY) / 2 + 90, (rightArrow1.posX + leftArrow1.posX) / 2 + 30, (rightArrow1.posY + leftArrow1.posY) / 2 + 130, al_map_rgb(120, 144, 156));
+
+                            Button leftArrow2;
+                            leftArrow2.posX = width * 3 / 100 + 105 + 90 + 50;
+                            leftArrow2.posY = height * 3 / 100 + 115 + 100;
+                            leftArrow2.width = width * 5 / 100 + leftArrow2.posX;
+                            leftArrow2.height = height * 5 / 100 + leftArrow2.posY;
+                            al_draw_scaled_bitmap(icon.leftFlash2, 0, 0, al_get_bitmap_width(icon.leftFlash2), al_get_bitmap_height(icon.leftFlash2), leftArrow2.posX, leftArrow2.posY, leftArrow2.width - leftArrow2.posX, leftArrow2.height - leftArrow2.posY, 0);
+                            al_draw_filled_rectangle((rightArrow1.posX + leftArrow1.posX) / 2 - 30, (rightArrow1.posY + leftArrow1.posY) / 2 + 90, (rightArrow1.posX + leftArrow1.posX) / 2 + 30 + 30, (rightArrow1.posY + leftArrow1.posY) / 2 + 130, al_map_rgb(120, 144, 156));
+                            al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow2.posX + leftArrow2.posX) / 2 + 20, (rightArrow2.posY + leftArrow2.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", player.numberWall);
+
+
+                            Button rightArrow2;
+                            rightArrow2.posX = width * 3 / 100 + 105 + 90 + 180 + 50;
+                            rightArrow2.posY = height * 3 / 100 + 115 + 100;
+                            rightArrow2.width = width * 5 / 100 + rightArrow2.posX;
+                            rightArrow2.height = height * 5 / 100 + rightArrow2.posY;
+                            al_draw_scaled_bitmap(icon.rightFlash2, 0, 0, al_get_bitmap_width(icon.rightFlash2), al_get_bitmap_height(icon.rightFlash2), rightArrow2.posX, rightArrow2.posY, rightArrow2.width - rightArrow2.posX, rightArrow2.height - rightArrow2.posY, 0);
+                            al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow2.posX + leftArrow2.posX) / 2, (rightArrow2.posY + leftArrow2.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", player.numberWall);
+                            al_draw_text(fontHelp, al_map_rgb(0, 0, 0), (rightArrow2.posX + leftArrow2.posX) / 2 - 80, (rightArrow2.posY + leftArrow2.posY) / 2 + 80, ALLEGRO_ALIGN_CENTRE, "Number of blocking rounds");
+                            al_draw_scaled_bitmap(icon.Equal, 0, 0, al_get_bitmap_width(icon.Equal), al_get_bitmap_height(icon.Equal), (rightArrow2.posX + leftArrow2.posX) / 2 + 120, (rightArrow2.posY + leftArrow2.posY) / 2 + 90, width * 5 / 100, height * 5 / 100, 0);
+                            al_draw_filled_rectangle((rightArrow1.posX + leftArrow1.posX) / 2 - 30, (rightArrow1.posY + leftArrow1.posY) / 2 + 90, (rightArrow1.posX + leftArrow1.posX) / 2 + 30 + 30, (rightArrow1.posY + leftArrow1.posY) / 2 + 130, al_map_rgb(120, 144, 156));
+
+                            al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow2.posX + leftArrow2.posX) / 2 + 20, (rightArrow2.posY + leftArrow2.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", player.numberWall);
+
+
+                            Button leftArrow3;
+                            leftArrow3.posX = width * 3 / 100 + 105 + 90 + 50 + 260;
+                            leftArrow3.posY = height * 3 / 100 + 115 + 100 + 90;
+                            leftArrow3.width = ((width * 5) / 100) + leftArrow3.posX;
+                            leftArrow3.height = ((height * 5) / 100) + leftArrow3.posY;
+                            al_draw_scaled_bitmap(icon.leftFlash1, 0, 0, al_get_bitmap_width(icon.leftFlash3), al_get_bitmap_height(icon.leftFlash3), leftArrow3.posX, leftArrow3.posY, leftArrow3.width - leftArrow3.posX, leftArrow3.height - leftArrow3.posY, 0);
+
+                            al_draw_filled_rectangle((rightArrow3.posX + leftArrow3.posX) / 2 - 30, (rightArrow3.posY + leftArrow3.posY) / 2 - 10, (rightArrow3.posX + leftArrow3.posX) / 2 + 35, (rightArrow3.posY + leftArrow3.posY) / 2 + 30, al_map_rgb(120, 144, 156));
+
+                            Button rightArrow3;
+                            rightArrow3.posX = width * 3 / 100 + 105 + 90 + 50 + 260 + 180;
+                            rightArrow3.posY = height * 3 / 100 + 115 + 100 + 90;
+                            rightArrow3.width = ((width * 5) / 100) + rightArrow3.posX;
+                            rightArrow3.height = ((height * 5) / 100) + rightArrow3.posY;
+                            al_draw_scaled_bitmap(icon.rightFlash1, 0, 0, al_get_bitmap_width(icon.rightFlash3), al_get_bitmap_height(icon.rightFlash3), rightArrow3.posX, rightArrow3.posY, rightArrow3.width - rightArrow3.posX, rightArrow3.height - rightArrow3.posY, 0);
+                            al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow3.posX + leftArrow3.posX) / 2 + 20, (rightArrow3.posY + leftArrow3.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", charm.block);
+
+                            al_draw_text(fontHelp, al_map_rgb(0, 0, 0), (rightArrow2.posX + leftArrow2.posX) / 2 - 92, (rightArrow2.posY + leftArrow2.posY) / 2 + 150, ALLEGRO_ALIGN_CENTRE, "Number of deleting walls");
+                            al_draw_scaled_bitmap(icon.Equal, 0, 0, al_get_bitmap_width(icon.Equal), al_get_bitmap_height(icon.Equal), (rightArrow2.posX + leftArrow2.posX) / 2 + 110, (rightArrow2.posY + leftArrow2.posY) / 2 + 157, width * 5 / 100, height * 5 / 100, 0);
+
+                            al_draw_filled_rectangle((rightArrow4.posX + leftArrow4.posX) / 2 - 30, (rightArrow4.posY + leftArrow4.posY) / 2 - 10, (rightArrow4.posX + leftArrow4.posX) / 2 + 35, (rightArrow4.posY + leftArrow4.posY) / 2 + 30, al_map_rgb(120, 144, 156));
+
+
+                            Button leftArrow4;
+                            leftArrow4.posX = width * 3 / 100 + 105 + 90 + 50 + 260;
+                            leftArrow4.posY = height * 3 / 100 + 115 + 100 + 90 + 70;
+                            leftArrow4.width = ((width * 5) / 100) + leftArrow4.posX;
+                            leftArrow4.height = ((height * 5) / 100) + leftArrow4.posY;
+                            al_draw_scaled_bitmap(icon.leftFlash4, 0, 0, al_get_bitmap_width(icon.leftFlash4), al_get_bitmap_height(icon.leftFlash4), leftArrow4.posX, leftArrow4.posY, leftArrow4.width - leftArrow4.posX, leftArrow4.height - leftArrow4.posY, 0);
+
+                            al_draw_filled_rectangle((rightArrow4.posX + leftArrow4.posX) / 2 - 30, (rightArrow4.posY + leftArrow4.posY) / 2 - 10, (rightArrow4.posX + leftArrow4.posX) / 2 + 35, (rightArrow4.posY + leftArrow4.posY) / 2 + 30, al_map_rgb(120, 144, 156));
+
+
+                            Button rightArrow4;
+                            rightArrow4.posX = width * 3 / 100 + 105 + 90 + 50 + 260 + 180;
+                            rightArrow4.posY = height * 3 / 100 + 115 + 100 + 90 + 70;
+                            rightArrow4.width = ((width * 5) / 100) + rightArrow4.posX;
+                            rightArrow4.height = ((height * 5) / 100) + rightArrow4.posY;
+                            al_draw_scaled_bitmap(icon.rightFlash4, 0, 0, al_get_bitmap_width(icon.rightFlash4), al_get_bitmap_height(icon.rightFlash4), rightArrow4.posX, rightArrow4.posY, rightArrow4.width - rightArrow4.posX, rightArrow4.height - rightArrow4.posY, 0);
+                            al_draw_textf(font, al_map_rgb(0, 0, 0), (rightArrow4.posX + leftArrow4.posX) / 2 + 20, (rightArrow4.posY + leftArrow4.posY) / 2 - 20, ALLEGRO_ALIGN_CENTRE, "%d", charm.delet_all_wall);
+                            al_flip_display();
+
+                        }
+                        if (checkButton(&apply, event.mouse.x, event.mouse.y)) {
+                            al_play_sample(audioClick, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+
+                            page = playMenu;
+                            Previous = setting;
+                            break;
+                        }
+                    }
+                }
+
+            }
+            al_flip_display();
+            al_destroy_display(display);
+        }
+        if (page == playMenu) {
+
+            ALLEGRO_DISPLAY* display = al_create_display((5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE, (5 * data.length + 1) * CELLSIZE);
+            ALLEGRO_EVENT event;
+            ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
+            al_register_event_source(queue, al_get_mouse_event_source());
+
+            al_register_event_source(queue, al_get_display_event_source(display));
+            //al_reserve_samples(1);
+            al_clear_to_color(al_map_rgb(120, 144, 156));
+
+            //al_draw_filled_rectangle((5 * data.length + 1)* CELLSIZE, 0, (5 * data.length + 1)* CELLSIZE + 20 * CELLSIZE, (5 * data.length + 1)* CELLSIZE, al_map_rgb(144, 164, 174));
+            width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
+            height = (5 * data.length + 1) * CELLSIZE;
+            al_draw_line(0, height * 5 / 100, width, height * 5 / 100, al_map_rgb(0, 0, 0), 5.0);
+            al_draw_text(customFont, al_map_rgb(0, 0, 0), width / 2, height / 10 - 10, ALLEGRO_ALIGN_CENTRE, "PLAYER MODE");
+            al_draw_line(0, height * 15 / 100, width, height * 15 / 100, al_map_rgb(0, 0, 0), 5.0);
+
+            Button submit1;
+
+            submit1.posX = width * 24 / 100;
+            submit1.posY = height * 34 / 100;
+            submit1.width = width * 44 / 100;
+            submit1.height = height * 45 / 100;
+            strcpy_s(submit1.name, 10, "NONE");
+            showButton(&submit1, 255, 255, 255);
+
+            Button submit2;
+
+            submit2.posX = width * 50 / 100;
+            submit2.posY = height * 34 / 100;
+            submit2.width = width * 70 / 100;
+            submit2.height = height * 45 / 100;
+            strcpy_s(submit2.name, 10, "NONE");
+            showButton(&submit2, 255, 255, 255);
+
+
+            Button submit3;
+
+            submit3.posX = width * 50 / 100;
+            submit3.posY = height * 50 / 100;
+            submit3.width = width * 70 / 100;
+            submit3.height = height * 60 / 100;
+            strcpy_s(submit3.name, 10, "NONE");
+            showButton(&submit3, 255, 255, 255);
+
+            Button submit4;
+
+            submit4.posX = width * 24 / 100;
+            submit4.posY = height * 50 / 100;
+            submit4.width = width * 44 / 100;
+            submit4.height = height * 60 / 100;
+            strcpy_s(submit4.name, 10, "NONE");
+            showButton(&submit4, 255, 255, 255);
+
+            Button back;
+            width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
+            height = (5 * data.length + 1) * CELLSIZE;
+            back.posX = width * 10 / 100;
+            back.posY = height * 70 / 100;
+            back.width = width * 31 / 100;
+            back.height = height * 80 / 100;
+            strcpy_s(back.name, 10, "BACK");
+            showButton(&back, 30, 136, 222);
+
+            Button Setting;
+            width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
+            height = (5 * data.length + 1) * CELLSIZE;
+            Setting.posX = width * 38 / 100;
+            Setting.posY = height * 70 / 100;
+            Setting.width = width * 60 / 100;
+            Setting.height = height * 80 / 100;
+            strcpy_s(Setting.name, 10, "SETTING");
+            showButton(&Setting, 30, 136, 222);
+
+            Button play;
+            width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
+            height = (5 * data.length + 1) * CELLSIZE;
+            play.posX = width * 68 / 100;
+            play.posY = height * 70 / 100;
+            play.width = width * 90 / 100;
+            play.height = height * 80 / 100;
+            strcpy_s(play.name, 10, "PLAY");
+            showButton(&play, 30, 136, 222);
+
+            al_flip_display();
+            while (1) {
+                al_wait_for_event(queue, &event);
+                if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+                    return 0;
+                }
+                if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
+                    if (event.mouse.button == 1) {
+                        if (checkButton(&submit1, event.mouse.x, event.mouse.y)) {
+                            al_play_sample(audioPiece, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+                            if (strcmp(submit1.name, "NONE") == 0) {
+
+                                strcpy_s(submit1.name, 10, "HUMAN");
+                                //printf("%s\n", submit1.name);
+
+                            }
+                            else if (!strcmp(submit1.name, "HUMAN")) {
+
+                                strcpy_s(submit1.name, 10, "COMPUTER");
+
+                            }
+                            else if (!strcmp(submit1.name, "COMPUTER")) {
+
+                                strcpy_s(submit1.name, 10, "NONE");
+
+                            }
+                            printf("%s\n", submit1.name);
+                            showButton(&submit1, 255, 255, 255);
+                            al_flip_display();
+                        }
+
+
+                        if (checkButton(&submit2, event.mouse.x, event.mouse.y)) {
+                            al_play_sample(audioPiece, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+                            if (strcmp(submit2.name, "NONE") == 0) {
+
+                                strcpy_s(submit2.name, 10, "HUMAN");
+                                //
+
+                            }
+                            else if (!strcmp(submit2.name, "HUMAN")) {
+
+                                strcpy_s(submit2.name, 10, "COMPUTER");
+
+                            }
+                            else if (!strcmp(submit2.name, "COMPUTER")) {
+
+                                strcpy_s(submit2.name, 10, "NONE");
+
+                            }
+
+                            showButton(&submit2, 255, 255, 255);
+                            al_flip_display();
+                        }
+
+
+                        if (checkButton(&submit3, event.mouse.x, event.mouse.y)) {
+                            al_play_sample(audioPiece, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+                            if (strcmp(submit3.name, "NONE") == 0) {
+
+                                strcpy_s(submit3.name, 10, "HUMAN");
+                                //
+
+                            }
+                            else if (!strcmp(submit3.name, "HUMAN")) {
+
+                                strcpy_s(submit3.name, 10, "COMPUTER");
+
+                            }
+                            else if (!strcmp(submit3.name, "COMPUTER")) {
+
+                                strcpy_s(submit3.name, 10, "NONE");
+
+                            }
+
+                            showButton(&submit3, 255, 255, 255);
+                            al_flip_display();
+                        }
+
+
+                        if (checkButton(&submit4, event.mouse.x, event.mouse.y)) {
+                            al_play_sample(audioPiece, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+                            if (strcmp(submit4.name, "NONE") == 0) {
+
+                                strcpy_s(submit4.name, 10, "HUMAN");
+                                //
+
+                            }
+                            else if (!strcmp(submit4.name, "HUMAN")) {
+
+                                strcpy_s(submit4.name, 10, "COMPUTER");
+
+                            }
+                            else if (!strcmp(submit4.name, "COMPUTER")) {
+
+                                strcpy_s(submit4.name, 10, "NONE");
+
+                            }
+
+                            showButton(&submit4, 255, 255, 255);
+                            al_flip_display();
+                        }
+
+                        if (checkButton(&back, event.mouse.x, event.mouse.y)) {
+                            al_play_sample(audioClick, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+                            page = Previous;
+                            Previous = playMenu;
+                            break;
+                        }
+                        if (checkButton(&Setting, event.mouse.x, event.mouse.y)) {
+                            al_play_sample(audioClick, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+                            Previous = playMenu;
+                            page = setting;
+                            break;
+                        }
+                        if (checkButton(&play, event.mouse.x, event.mouse.y)) {
+                            al_play_sample(audioClick, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+                            Previous = playMenu;
+                            page = startGame;
+                            break;
+                        }
+                    }
+                }
+            }
+            al_flip_display();
+            al_destroy_display(display);
+        }
+
+            /*if (page == startGame) {
+
+                int width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
+                int height = (5 * data.length + 1) * CELLSIZE;
+
+                makePrimaryBoard(&data);
+                Button save;
+                save.posX = width * 80 / 100;
+                save.posY = height * 10 / 100;
+                save.width = width * 90 / 100;
+                save.height = height * 15 / 100;
+                strcpy_s(save.name, 5, "SAVE");
+
+
+                Button load;
+                load.posX = width * 80 / 100;
+                load.posY = height * 30 / 100;
+                load.width = width * 90 / 100;
+                load.height = height * 35 / 100;
+                strcpy_s(load.name, 5, "LOAD");
+
+                showBoard(data, showPlayer, showPossiblity, Walls);
+                showButton(&save);
+                showButton(&load);
+                ALLEGRO_BITMAP* oldDisplay;
+                Multiplayer = 4;
+                if (Multiplayer == 4) {
+                    //printf("%d\n", data.length);
+                    data.board[0][data.length - data.length % 2] = 1;
+                    data.board[data.length * 2 - 2][data.length - data.length % 2] = 2;
+                    data.board[(data.length - data.length % 2)][0] = 3;
+                    data.board[(data.length - data.length % 2)][data.length * 2 - data.length % 2 - 2] = 4;
+                    //player.term = 1;
+                    //if (data.length % 2 == 0) {
+                    player.pieceCoordinate[0] = 0;
+                    player.pieceCoordinate[1] = data.length - data.length % 2;
+                    player.pieceCoordinate[2] = data.length * 2 - 2;
+                    player.pieceCoordinate[3] = data.length - data.length % 2;
+                    player.pieceCoordinate[4] = data.length - data.length % 2;
+                    player.pieceCoordinate[5] = 0;
+                    player.pieceCoordinate[6] = data.length - data.length % 2;
+                    player.pieceCoordinate[7] = data.length * 2 - data.length % 2 - 2;
+                    //}
+
+
+
+
+                    int m = 0;
+
+
+                    while (1) {
+                        checkingWall = 0;
+                        checkingPiece = 0;
+                        //luck(&data, &player, &charm, &present, Multiplayer);
+
+                        if (m % 4 == 0)player.term = 1;
+                        else if (m % 4 == 1) player.term = 2;
+                        else if (m % 4 == 2) player.term = 3;
+                        else if (m % 4 == 3)player.term = 4;
+
+                        //showBoard(data);
+                        movePiecePossiblities(&data, &player);
+                        movePiecePossiblitiesJump(&data, &player);
+                        movePiecePossiblitiesParties(&data, &player);
+                        //putWalls(&data, &player, event_queue, ev);
+
+                        showBoard(data, showPlayer, showPossiblity, Walls);
+                        showButton(&save);
+                        showButton(&load);
+                        al_flip_display();
+                        oldDisplay = al_clone_bitmap(al_get_backbuffer(display));
+
+                        while (1) {
+
+                            al_wait_for_event(event_queue, &event);
+
+                            if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+                                return 0;
+                            }
+
+                            if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
+                                if (event.mouse.button == 1) {
+
+                                    if (checkButton(&save, event.mouse.x, event.mouse.y)) {
+                                        al_play_sample(audioClick, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+                                        FILE* file;
+                                        fopen_s(&file, "./Save.dat", "wb");
+                                        fwrite(&data, sizeof(data), 1, file);
+                                        fwrite(&player, sizeof(player), 1, file);
+                                        fclose(file);
+                                        continue;
+                                    }
+                                    if (checkButton(&load, event.mouse.x, event.mouse.y)) {
+
+                                        FILE* file;
+                                        fopen_s(&file, "./Save.dat", "rb");
+                                        if (!file) continue;
+                                        fread(&data, sizeof(data), 1, file);
+                                        fread(&player, sizeof(player), 1, file);
+                                        al_unregister_event_source(event_queue, al_get_display_event_source(display));
+
+                                        al_destroy_display(display);
+                                        display = al_create_display((5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE, (5 * data.length + 1) * CELLSIZE);
+                                        al_register_event_source(event_queue, al_get_display_event_source(display));
+                                        width = (5 * data.length + 1) * CELLSIZE + 20 * CELLSIZE;
+                                        height = (5 * data.length + 1) * CELLSIZE;
+
+                                        Button save;
+                                        //Button load;
+                                        save.posX = width * 80 / 100;
+                                        save.posY = height * 10 / 100;
+                                        save.width = width * 90 / 100;
+                                        save.height = height * 15 / 100;
+                                        strcpy_s(save.name, 5, "SAVE");
+
+
+                                        Button load;
+                                        load.posX = width * 80 / 100;
+                                        load.posY = height * 30 / 100;
+                                        load.width = width * 90 / 100;
+                                        load.height = height * 35 / 100;
+                                        strcpy_s(load.name, 5, "LOAD");
+
+                                        showBoard(data, showPlayer, showPossiblity, Walls);
+                                        showButton(&save);
+                                        showButton(&load);
+                                        al_flip_display();
+                                        oldDisplay = al_clone_bitmap(al_get_backbuffer(display));
+
+
+                                        al_play_sample(audioClick, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+                                        fclose(file);
+                                        continue;
+                                    }
+
+
+
+                                    putWalls(&data, &player, event_queue, ev, &go, 4, event.mouse.x, event.mouse.y, 1, &checkingWall, Walls);
+                                    if (checkingWall) {
+                                        al_play_sample(audioWall, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+                                    }
+
+                                    //printf("%d\n", putWalls(&data, &player, event_queue, ev, &go, 4, event.mouse.x, event.mouse.y, 1));
+                                    movePiece(&data, &player, event_queue, ev, event.mouse.x, event.mouse.y, &checkingPiece);
+                                    // printf("%d\n", movePiece(&data, &player, event_queue, ev, event.mouse.x, event.mouse.y));
+                                    if (checkingPiece) {
+                                        al_play_sample(audioPiece, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+                                    }
+                                    m = m + (checkingPiece + checkingWall);
+
+                                    showBoard(data, showPlayer, showPossiblity, Walls);
+                                    showButton(&save);
+                                    showButton(&load);
+
+                                    al_flip_display();
+
+                                    break;
+                                }
+                            }
+
+                            if (event.type == ALLEGRO_EVENT_MOUSE_AXES) {
+                                al_draw_bitmap(oldDisplay, 0, 0, 0);
+                                putWalls(&data, &player, event_queue, ev, &go, 4, event.mouse.x, event.mouse.y, 0, &checkingWall, Walls);
+
+                            }
+
+
+
+                        }
+
+                        //movePiece(&data, &player, event_queue, ev);
+
+
+                        //showBoard(data);
+
+
+
+
+                    }
+                    al_flip_display();
+                    // Wait for a key press before closing the window
+                    al_rest(50.0);
+
+                    // Destroy the display
+                    al_destroy_sample(audioPiece);
+                    al_destroy_sample(audioWall);
+                    al_destroy_display(display);
+                    al_uninstall_audio();
+
+
+                    return 0;
+                }
+
+                //------------------------------------------------------------------------------------------------------------------------------------------------
+
+                /*if (Multiplayer == 2) {
+                    data.board[0][data.length - data.length % 2] = 1;
+                    data.board[data.length * 2 - 2][data.length - data.length % 2] = 2;
+                    player.pieceCoordinate[0] = 0;
+                    player.pieceCoordinate[1] = data.length - data.length % 2;
+                    player.pieceCoordinate[2] = data.length * 2 - 2;
+                    player.pieceCoordinate[3] = data.length - data.length % 2;
+                    int k = 0;
+
+
+                    while (1) {
+                        luck(&data, &player, &charm, &present, Multiplayer);
+
+                        for (register int i = 0; i < 2 * data.length; i++) {
+                            for (int j = 0; j < 2 * data.length; j++) {
+                                if (data.board[i][j] == 6) data.board[i][j] = 5;
+                            }
+                        }
+                        showBoard(data);
+                        if (k % 2 == 0) {//player
+                            player.term = 1;
+
+                            showBoard(data);
+                            movePiecePossiblities(&data, &player);
+                            movePiecePossiblitiesJump(&data, &player);
+                            movePiecePossiblitiesParties(&data, &player);
+
+
+                            while (1) {
+                                //showBoard(data);
+                                delete_wall(&data);
+                                showBoard(data);
+                                putWalls(&data, &player, event_queue, ev, &go, 2);
+                                showBoard(data);
+                                al_flip_display();
+
+                                if (go == 1) {
+
+                                    break;
+                                }
+                                showBoard(data);
+                            }
+                            //showBoard(data);
+
+                            movePiece(&data, &player, event_queue, ev);
+
+
+                            showBoard(data);
+                        }
+                        else if (k % 2 == 1) {//computer
+                            player.term = 2;
+                            for (register int i = 0; i < 2 * data.length; i++) {
+                                for (int j = 0; j < 2 * data.length; j++) {
+                                    if (data.board[i][j] == 6) data.board[i][j] = 5;
+                                }
+                            }
+                            //showBoard(data);
+                            movePiecePossiblities(&data, &player);
+                            movePiecePossiblitiesJump(&data, &player);
+                            movePiecePossiblitiesParties(&data, &player);
+                            //showBoard(data);
+                            //computerPlayer(&data, &player, 2);
+                            //delete_wall(&data);
+                            srand(time(NULL));
+                            int choose = rand() % 2;
+                            printf("%d, \n", choose);
+                            if (choose == 0) {//move piece
+
+                                computerMove(&data, &player);
+
+                            }
+                            else if (choose == 1) {// computer wall
+                                computerWall(&data, &player, 2);
+                            }
+                            //showBoard(data);
+                        }
+
+                        k++;
+                        al_flip_display();
+
+
+
+                    }
+                    al_flip_display();
+
+                    // Wait for a key press before closing the window
+                    al_rest(50.0);
+
+                    // Destroy the display
+                    al_destroy_display(display);
+
+                    return 0;
+                }*/
+                //----------------------------------------$endGame$------------------------------------------------------//
+            //}
+           //al_destroy_font(customFont);
+        }
+    }
+    
